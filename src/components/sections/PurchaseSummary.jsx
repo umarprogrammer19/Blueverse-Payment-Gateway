@@ -75,10 +75,9 @@ export default function PurchaseSummary({
 
                 {/* Payment Methods */}
                 <div className="flex items-center gap-2 pt-4 border-t border-gray-200">
-                    <img src="/visa.svg" alt="Visa" className="h-6" />
-                    <img src="/mastercard.svg" alt="Mastercard" className="h-6" />
-                    <img src="/discover.svg" alt="Discover" className="h-6" />
-                    <img src="/amex.svg" alt="American Express" className="h-6" />
+                    <img src="/visa.png" alt="Visa" className="h-8" />
+                    <img src="/money.png" alt="Mastercard" className="h-8" />
+                    <img src="/amex.png" alt="American Express" className="h-8" />
                 </div>
 
                 <div className="flex items-center gap-2 text-xs text-gray-500">
