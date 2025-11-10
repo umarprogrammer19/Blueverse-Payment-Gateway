@@ -236,7 +236,7 @@ function App() {
 
 export default App;
 
-// ---- refresh helpers (same as before) ----
+// refresh helpers (same as before)
 async function doRefresh() {
   try {
     const base = import.meta.env.VITE_API_BASE_URL;
