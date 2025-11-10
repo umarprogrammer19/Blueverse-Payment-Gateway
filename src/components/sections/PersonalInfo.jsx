@@ -1,7 +1,16 @@
 "use client"
 
 export default function PersonalInfo({ formData, onChange, onToggle, siteData }) {
-    console.log(siteData);
+    const sites = Array.isArray(siteData?.data) ? siteData.data : [];
+
+    // Unique states from all sites
+    const stateOptions = [...new Set(sites.map(s => s?.stateName).filter(Boolean))];
+
+    // Cities from the selected site only (if selected)
+    const selectedSite = sites.find(
+        s => String(s?.id ?? s?.siteId) === String(formData.assignToLocSite)
+    );
+    const cityOptions = selectedSite?.cityName ? [selectedSite.cityName] : [];
 
     return (
         <div>
@@ -99,16 +108,14 @@ export default function PersonalInfo({ formData, onChange, onToggle, siteData })
                         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
                     >
                         <option value="">Select Loc/Site</option>
-                        {Array.isArray(siteData?.data) &&
-                            siteData.data.map((site, idx) => (
-                                <option
-                                    key={site?.id ?? site?.siteId ?? idx}
-                                    value={site?.id ?? site?.siteId ?? `location${idx + 1}`}
-                                >
-                                    {site?.siteName ?? `Site ${idx + 1}`}
-                                </option>
-                            ))
-                        }
+                        {sites.map((site, idx) => (
+                            <option
+                                key={site?.id ?? site?.siteId ?? idx}
+                                value={site?.id ?? site?.siteId ?? `location${idx + 1}`}
+                            >
+                                {site?.siteName ?? `Site ${idx + 1}`}
+                            </option>
+                        ))}
                     </select>
                 </div>
                 <div>
@@ -131,10 +138,9 @@ export default function PersonalInfo({ formData, onChange, onToggle, siteData })
                         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
                     >
                         <option value="">Select state</option>
-                        <option value="CA">California</option>
-                        <option value="NY">New York</option>
-                        <option value="TX">Texas</option>
-                        <option value="FL">Florida</option>
+                        {stateOptions.map((st) => (
+                            <option key={st} value={st}>{st}</option>
+                        ))}
                     </select>
                 </div>
                 <div>
@@ -146,9 +152,9 @@ export default function PersonalInfo({ formData, onChange, onToggle, siteData })
                         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
                     >
                         <option value="">Select city</option>
-                        <option value="city1">City 1</option>
-                        <option value="city2">City 2</option>
-                        <option value="city3">City 3</option>
+                        {cityOptions.map((city) => (
+                            <option key={city} value={city}>{city}</option>
+                        ))}
                     </select>
                 </div>
                 <div className="col-span-2">
