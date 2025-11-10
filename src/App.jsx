@@ -125,19 +125,19 @@ function App() {
 
             {/* Payment Information */}
             {/* <section className="bg-white rounded-lg p-6">
-                            <div className="flex items-center gap-3 mb-6 pb-4 border-b-2 border-dashed border-gray-200">
-                                <div className="bg-blue-100 p-2 rounded">
-                                    <CreditCard size={20} className="text-blue-600" />
-                                </div>
-                                <h2 className="text-lg font-semibold text-gray-900">Payment information</h2>
-                            </div>
-                            <PaymentInfo
-                                formData={formData}
-                                onChange={handleInputChange}
-                                showSecurity={showSecurity}
-                                setShowSecurity={setShowSecurity}
-                            />
-                        </section> */}
+              <div className="flex items-center gap-3 mb-6 pb-4 border-b-2 border-dashed border-gray-200">
+                <div className="bg-blue-100 p-2 rounded">
+                  <CreditCard size={20} className="text-blue-600" />
+                </div>
+                <h2 className="text-lg font-semibold text-gray-900">Payment information</h2>
+              </div>
+              <PaymentInfo
+                formData={formData}
+                onChange={handleInputChange}
+                showSecurity={showSecurity}
+                setShowSecurity={setShowSecurity}
+              />
+            </section> */}
           </div>
         </div>
 
