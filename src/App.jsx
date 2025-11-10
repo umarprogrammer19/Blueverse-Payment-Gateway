@@ -142,15 +142,15 @@ function App() {
         </div>
 
         {/* Right Column - Summary */}
-        <div className="lg:col-span-1">
+        {/* <div className="lg:col-span-1">
           <div className="space-y-6">
-            {/* Product Select */}
+
             <section className="bg-white rounded-lg p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Select products</h3>
               <ProductSelect />
             </section>
 
-            {/* Purchase Summary */}
+            
             <section className="bg-white rounded-lg p-6 sticky top-8">
               <h3 className="text-lg font-semibold text-gray-900 mb-6">Your purchase</h3>
               <PurchaseSummary
@@ -161,7 +161,7 @@ function App() {
               />
             </section>
           </div>
-        </div>
+        </div> */}
       </div>
     </main>
   );
