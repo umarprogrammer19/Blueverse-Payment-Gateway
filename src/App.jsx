@@ -16,7 +16,20 @@ function App() {
     securityCode: "",
     billingZip: "",
     couponCode: "",
-  })
+    dateOfBirth: "",
+    address: "",
+    assignToLocSite: "",   
+    zipCode: "",
+    state: "",
+    city: "",
+    loyaltyPoints: "",
+    allowInvoicing: false,
+    sendText: false,
+    sendEmail: false,
+    blacklistedCustomer: false,
+    activeCustomer: true,
+  });
+
 
   const handleInputChange = (e) => {
     const { name, value } = e.target

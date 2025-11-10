@@ -99,10 +99,16 @@ export default function PersonalInfo({ formData, onChange, onToggle, siteData })
                         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
                     >
                         <option value="">Select Loc/Site</option>
-                        {siteData?.data.map((site, idx) => {
-                            // console.log(site.siteName);
-                            <option value={`location${idx + 1}`}>{site.siteName}</option>
-                        })}
+                        {Array.isArray(siteData?.data) &&
+                            siteData.data.map((site, idx) => (
+                                <option
+                                    key={site?.id ?? site?.siteId ?? idx}
+                                    value={site?.id ?? site?.siteId ?? `location${idx + 1}`}
+                                >
+                                    {site?.siteName ?? `Site ${idx + 1}`}
+                                </option>
+                            ))
+                        }
                     </select>
                 </div>
                 <div>
