@@ -31,11 +31,10 @@ export function clearTokens() {
 function isJwtExpired(token) {
     try {
         const [, payloadB64] = token.split(".");
-        if (!payloadB64) return false; // not a JWT? fallback to 401 flow
+        if (!payloadB64) return false; // not a JWT? fallback to 401
         const payload = JSON.parse(atob(payloadB64.replace(/-/g, "+").replace(/_/g, "/")));
         const exp = typeof payload.exp === "number" ? payload.exp : 0;
         const now = Math.floor(Date.now() / 1000);
-        // refresh a little early (30s skew)
         return now >= exp - 30;
     } catch {
         return false;
@@ -43,14 +42,13 @@ function isJwtExpired(token) {
 }
 
 async function refreshTokens() {
-    // de-duplicate concurrent refresh calls
     if (refreshingPromise) return refreshingPromise;
 
     const current = getTokens();
     if (!current) return null;
 
     const base = import.meta.env.VITE_API_BASE_URL;
-    const apiKey = import.meta.env.VITE_API_KEY || ""; // if your backend requires the "key" field
+    const apiKey = import.meta.env.VITE_API_KEY || "";
 
     refreshingPromise = (async () => {
         try {
@@ -70,9 +68,9 @@ async function refreshTokens() {
             }
 
             const data = await res.json();
-            // Adjust paths based on your API's exact shape:
-            const nextAccess = data?.data?.accessToken || data?.accessToken;
-            const nextRefresh = data?.data?.refreshToken || data?.refreshToken;
+
+            const nextAccess = data?.data?.accessToken;
+            const nextRefresh = data?.data?.refreshToken;
 
             if (!nextAccess || !nextRefresh) {
                 clearTokens();
@@ -93,9 +91,8 @@ async function refreshTokens() {
     return refreshingPromise;
 }
 
-/**
- * fetchWithAuth: adds Authorization, refreshes on expiry/401, retries once.
- */
+// fetchWithAuth: adds Authorization, refreshes on expiry/401, retries once.
+
 export async function fetchWithAuth(input) {
     const baseInit = {
         ...init,
@@ -107,7 +104,7 @@ export async function fetchWithAuth(input) {
 
     let tokens = getTokens();
 
-    // Refresh proactively if token looks expired
+    // if token looks expired
     if (tokens?.accessToken && isJwtExpired(tokens.accessToken)) {
         tokens = await refreshTokens();
     }
