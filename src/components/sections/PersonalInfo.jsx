@@ -1,246 +1,239 @@
 "use client"
 
-export default function PersonalInfo({ formData, onChange, onToggle }) {
-  return (
-    <div>
-      <p className="text-sm text-gray-600 mb-6">
-        Please fill out the information, and we will automatically create an account or{" "}
-        <a href="#" className="text-blue-600 hover:underline">
-          Log in
-        </a>{" "}
-        if you are already a member
-      </p>
+export default function PersonalInfo({ formData, onChange, onToggle, siteData }) {
+    console.log(siteData);
 
-      {/* Basic Information */}
-      <div className="grid grid-cols-2 gap-4 mb-6">
+    return (
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            First name<span className="text-red-500">*</span>
-          </label>
-          <input
-            type="text"
-            name="firstName"
-            placeholder="First name"
-            value={formData.firstName}
-            onChange={onChange}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Phone number</label>
-          <input
-            type="tel"
-            name="phone"
-            placeholder="Phone number"
-            value={formData.phone}
-            onChange={onChange}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Last name<span className="text-red-500">*</span>
-          </label>
-          <input
-            type="text"
-            name="lastName"
-            placeholder="Last name"
-            value={formData.lastName}
-            onChange={onChange}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Email address</label>
-          <input
-            type="email"
-            name="email"
-            placeholder="Email address"
-            value={formData.email}
-            onChange={onChange}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
-          />
-        </div>
-      </div>
+            <p className="text-sm text-gray-600 mb-6">
+                Please fill out the information, and we will automatically create an account or{" "}
+                <a href="#" className="text-blue-600 hover:underline">
+                    Log in
+                </a>{" "}
+                if you are already a member
+            </p>
 
-      <div className="grid grid-cols-2 gap-4 mb-6">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Date of birth</label>
-          <input
-            type="date"
-            name="dateOfBirth"
-            placeholder="Select date"
-            value={formData.dateOfBirth}
-            onChange={onChange}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Address</label>
-          <input
-            type="text"
-            name="address"
-            placeholder="Address line"
-            value={formData.address}
-            onChange={onChange}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Assign to Loc/Site<span className="text-red-500">*</span>
-          </label>
-          <select
-            name="assignToLocSite"
-            value={formData.assignToLocSite}
-            onChange={onChange}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
-          >
-            <option value="">Select Loc/Site</option>
-            <option value="location1">Location 1</option>
-            <option value="location2">Location 2</option>
-            <option value="location3">Location 3</option>
-          </select>
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">ZIP code</label>
-          <input
-            type="text"
-            name="zipCode"
-            placeholder="Add ZIP code"
-            value={formData.zipCode}
-            onChange={onChange}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">State</label>
-          <select
-            name="state"
-            value={formData.state}
-            onChange={onChange}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
-          >
-            <option value="">Select state</option>
-            <option value="CA">California</option>
-            <option value="NY">New York</option>
-            <option value="TX">Texas</option>
-            <option value="FL">Florida</option>
-          </select>
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">City</label>
-          <select
-            name="city"
-            value={formData.city}
-            onChange={onChange}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
-          >
-            <option value="">Select city</option>
-            <option value="city1">City 1</option>
-            <option value="city2">City 2</option>
-            <option value="city3">City 3</option>
-          </select>
-        </div>
-        <div className="col-span-2">
-          <label className="block text-sm font-medium text-gray-700 mb-2">Loyalty points amount</label>
-          <input
-            type="text"
-            name="loyaltyPoints"
-            placeholder="Loyalty points"
-            value={formData.loyaltyPoints}
-            onChange={onChange}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
-          />
-        </div>
-      </div>
+            {/* Basic Information */}
+            <div className="grid grid-cols-2 gap-4 mb-6">
+                <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                        First name<span className="text-red-500">*</span>
+                    </label>
+                    <input
+                        type="text"
+                        name="firstName"
+                        placeholder="First name"
+                        value={formData.firstName}
+                        onChange={onChange}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                    />
+                </div>
+                <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Phone number</label>
+                    <input
+                        type="tel"
+                        name="phone"
+                        placeholder="Phone number"
+                        value={formData.phone}
+                        onChange={onChange}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                    />
+                </div>
+                <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Last name<span className="text-red-500">*</span>
+                    </label>
+                    <input
+                        type="text"
+                        name="lastName"
+                        placeholder="Last name"
+                        value={formData.lastName}
+                        onChange={onChange}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                    />
+                </div>
+                <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Email address</label>
+                    <input
+                        type="email"
+                        name="email"
+                        placeholder="Email address"
+                        value={formData.email}
+                        onChange={onChange}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                    />
+                </div>
+            </div>
 
-      <div className="space-y-4">
-        <div className="flex items-center justify-between py-2">
-          <label className="text-sm font-medium text-gray-700">Allow invoicing</label>
-          <button
-            type="button"
-            onClick={() => onToggle("allowInvoicing")}
-            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-              formData.allowInvoicing ? "bg-blue-500" : "bg-gray-300"
-            }`}
-          >
-            <span
-              className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                formData.allowInvoicing ? "translate-x-6" : "translate-x-1"
-              }`}
-            />
-          </button>
+            <div className="grid grid-cols-2 gap-4 mb-6">
+                <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Date of birth</label>
+                    <input
+                        type="date"
+                        name="dateOfBirth"
+                        placeholder="Select date"
+                        value={formData.dateOfBirth}
+                        onChange={onChange}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                    />
+                </div>
+                <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Address</label>
+                    <input
+                        type="text"
+                        name="address"
+                        placeholder="Address line"
+                        value={formData.address}
+                        onChange={onChange}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                    />
+                </div>
+                <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Assign to Loc/Site<span className="text-red-500">*</span>
+                    </label>
+                    <select
+                        name="assignToLocSite"
+                        value={formData.assignToLocSite}
+                        onChange={onChange}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                    >
+                        <option value="">Select Loc/Site</option>
+                        {siteData?.data.map((site, idx) => {
+                            // console.log(site.siteName);
+                            <option value={`location${idx + 1}`}>{site.siteName}</option>
+                        })}
+                    </select>
+                </div>
+                <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">ZIP code</label>
+                    <input
+                        type="text"
+                        name="zipCode"
+                        placeholder="Add ZIP code"
+                        value={formData.zipCode}
+                        onChange={onChange}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                    />
+                </div>
+                <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">State</label>
+                    <select
+                        name="state"
+                        value={formData.state}
+                        onChange={onChange}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                    >
+                        <option value="">Select state</option>
+                        <option value="CA">California</option>
+                        <option value="NY">New York</option>
+                        <option value="TX">Texas</option>
+                        <option value="FL">Florida</option>
+                    </select>
+                </div>
+                <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">City</label>
+                    <select
+                        name="city"
+                        value={formData.city}
+                        onChange={onChange}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                    >
+                        <option value="">Select city</option>
+                        <option value="city1">City 1</option>
+                        <option value="city2">City 2</option>
+                        <option value="city3">City 3</option>
+                    </select>
+                </div>
+                <div className="col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Loyalty points amount</label>
+                    <input
+                        type="text"
+                        name="loyaltyPoints"
+                        placeholder="Loyalty points"
+                        value={formData.loyaltyPoints}
+                        onChange={onChange}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                    />
+                </div>
+            </div>
+
+            <div className="space-y-4">
+                <div className="flex items-center justify-between py-2">
+                    <label className="text-sm font-medium text-gray-700">Allow invoicing</label>
+                    <button
+                        type="button"
+                        onClick={() => onToggle("allowInvoicing")}
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${formData.allowInvoicing ? "bg-blue-500" : "bg-gray-300"
+                            }`}
+                    >
+                        <span
+                            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${formData.allowInvoicing ? "translate-x-6" : "translate-x-1"
+                                }`}
+                        />
+                    </button>
+                </div>
+                <div className="flex items-center justify-between py-2">
+                    <label className="text-sm font-medium text-gray-700">Send text</label>
+                    <button
+                        type="button"
+                        onClick={() => onToggle("sendText")}
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${formData.sendText ? "bg-blue-500" : "bg-gray-300"
+                            }`}
+                    >
+                        <span
+                            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${formData.sendText ? "translate-x-6" : "translate-x-1"
+                                }`}
+                        />
+                    </button>
+                </div>
+                <div className="flex items-center justify-between py-2">
+                    <label className="text-sm font-medium text-gray-700">Send email</label>
+                    <button
+                        type="button"
+                        onClick={() => onToggle("sendEmail")}
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${formData.sendEmail ? "bg-blue-500" : "bg-gray-300"
+                            }`}
+                    >
+                        <span
+                            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${formData.sendEmail ? "translate-x-6" : "translate-x-1"
+                                }`}
+                        />
+                    </button>
+                </div>
+                <div className="flex items-center justify-between py-2 border-t border-gray-200 pt-4">
+                    <label className="text-sm font-medium text-gray-700">TCPA enabled</label>
+                    <span className="text-sm text-gray-600">No</span>
+                </div>
+                <div className="flex items-center justify-between py-2">
+                    <label className="text-sm font-medium text-gray-700">Blacklisted customer</label>
+                    <button
+                        type="button"
+                        onClick={() => onToggle("blacklistedCustomer")}
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${formData.blacklistedCustomer ? "bg-blue-500" : "bg-gray-300"
+                            }`}
+                    >
+                        <span
+                            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${formData.blacklistedCustomer ? "translate-x-6" : "translate-x-1"
+                                }`}
+                        />
+                    </button>
+                </div>
+                <div className="flex items-center justify-between py-2">
+                    <label className="text-sm font-medium text-gray-700">Active customer</label>
+                    <button
+                        type="button"
+                        onClick={() => onToggle("activeCustomer")}
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${formData.activeCustomer ? "bg-blue-500" : "bg-gray-300"
+                            }`}
+                    >
+                        <span
+                            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${formData.activeCustomer ? "translate-x-6" : "translate-x-1"
+                                }`}
+                        />
+                    </button>
+                </div>
+            </div>
         </div>
-        <div className="flex items-center justify-between py-2">
-          <label className="text-sm font-medium text-gray-700">Send text</label>
-          <button
-            type="button"
-            onClick={() => onToggle("sendText")}
-            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-              formData.sendText ? "bg-blue-500" : "bg-gray-300"
-            }`}
-          >
-            <span
-              className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                formData.sendText ? "translate-x-6" : "translate-x-1"
-              }`}
-            />
-          </button>
-        </div>
-        <div className="flex items-center justify-between py-2">
-          <label className="text-sm font-medium text-gray-700">Send email</label>
-          <button
-            type="button"
-            onClick={() => onToggle("sendEmail")}
-            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-              formData.sendEmail ? "bg-blue-500" : "bg-gray-300"
-            }`}
-          >
-            <span
-              className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                formData.sendEmail ? "translate-x-6" : "translate-x-1"
-              }`}
-            />
-          </button>
-        </div>
-        <div className="flex items-center justify-between py-2 border-t border-gray-200 pt-4">
-          <label className="text-sm font-medium text-gray-700">TCPA enabled</label>
-          <span className="text-sm text-gray-600">No</span>
-        </div>
-        <div className="flex items-center justify-between py-2">
-          <label className="text-sm font-medium text-gray-700">Blacklisted customer</label>
-          <button
-            type="button"
-            onClick={() => onToggle("blacklistedCustomer")}
-            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-              formData.blacklistedCustomer ? "bg-blue-500" : "bg-gray-300"
-            }`}
-          >
-            <span
-              className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                formData.blacklistedCustomer ? "translate-x-6" : "translate-x-1"
-              }`}
-            />
-          </button>
-        </div>
-        <div className="flex items-center justify-between py-2">
-          <label className="text-sm font-medium text-gray-700">Active customer</label>
-          <button
-            type="button"
-            onClick={() => onToggle("activeCustomer")}
-            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-              formData.activeCustomer ? "bg-blue-500" : "bg-gray-300"
-            }`}
-          >
-            <span
-              className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                formData.activeCustomer ? "translate-x-6" : "translate-x-1"
-              }`}
-            />
-          </button>
-        </div>
-      </div>
-    </div>
-  )
+    )
 }

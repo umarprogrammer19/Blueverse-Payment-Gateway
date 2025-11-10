@@ -1,12 +1,10 @@
+import { User } from "lucide-react";
 import { useEffect, useState } from "react";
 import { setTokens } from "./auth";
-import { Car, User } from "lucide-react";
 import PersonalInfo from "./components/sections/PersonalInfo";
-import CarInfo from "./components/sections/CarInfo";
-import ProductSelect from "./components/sections/ProductSelect";
-import PurchaseSummary from "./components/sections/PurchaseSummary";
 
 function App() {
+  const [siteData, setSiteData] = useState(null)
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -28,13 +26,13 @@ function App() {
     }))
   }
 
-  const handleApplyCoupon = () => {
-    console.log("Applied coupon:", formData.couponCode)
-  }
+  // const handleApplyCoupon = () => {
+  //   console.log("Applied coupon:", formData.couponCode)
+  // }
 
-  const handleCheckout = () => {
-    console.log("Checkout:", formData)
-  }
+  // const handleCheckout = () => {
+  //   console.log("Checkout:", formData)
+  // }
 
 
   useEffect(() => {
@@ -85,6 +83,7 @@ function App() {
           console.error("Sites fetch failed:", sitesRes.status);
         }
         const sitesData = await sitesRes.json();
+        setSiteData(sitesData)
         console.log("Sites Response:", sitesData);
 
         scheduleTokenRefresh();
@@ -109,11 +108,11 @@ function App() {
                 </div>
                 <h2 className="text-lg font-semibold text-gray-900">Personal information</h2>
               </div>
-              <PersonalInfo formData={formData} onChange={handleInputChange} />
+              <PersonalInfo siteData={siteData} formData={formData} onChange={handleInputChange} />
             </section>
 
             {/* Car Information */}
-            <section className="bg-white rounded-lg p-6">
+            {/* <section className="bg-white rounded-lg p-6">
               <div className="flex items-center gap-3 mb-6 pb-4 border-b-2 border-dashed border-gray-200">
                 <div className="bg-blue-100 p-2 rounded">
                   <Car size={20} className="text-blue-600" />
@@ -121,7 +120,7 @@ function App() {
                 <h2 className="text-lg font-semibold text-gray-900">Car information</h2>
               </div>
               <CarInfo formData={formData} onChange={handleInputChange} />
-            </section>
+            </section> */}
 
             {/* Payment Information */}
             {/* <section className="bg-white rounded-lg p-6">
@@ -219,3 +218,33 @@ function scheduleTokenRefresh() {
     if (rotated) scheduleTokenRefresh();
   }, FOURTEEN_MIN);
 }
+
+
+// const app = {
+//   "key": authData.data.key,
+//   "address": "Take from form",
+//   "allowInvoicing": false,
+//   "blackList": false,
+//   "ccNumber": "",
+//   "ccToken": "",
+//   "ccType": "",
+//   "cityId": "",
+//   "dateOfBirth": "Take from form",
+//   "emailId": "Take from form",
+//   "expiryMonth": "",
+//   "expiryYear": "",
+//   "firstName": "test",
+//   "isActive": true,
+//   "isCardOnFile": false,
+//   "isSendEmail": false,
+//   "isSendText": false,
+//   "isTcpaEnabled": false,
+//   "lastName": "new",
+//   "loyaltyPoints": "11",
+//   "nameOnCard": "",
+//   "phone": "Take from form",
+//   "recurringData": "",
+//   "siteId": "Take From Previous Site Id",
+//   "stateId": "54",
+//   "zipCode": "72500"
+// }
