@@ -20,12 +20,14 @@ function App() {
         );
 
         const data = await res.json();
+        localStorage.setItem("accessToken", JSON.stringify(data.data.accessToken))
+        localStorage.setItem("refreshToken", JSON.stringify(data.data.refreshToken))
         console.log("API Response:", data);
       } catch (error) {
         console.error("Error authenticating user:", error);
       }
     })();
-  }, []); 
+  }, []);
 
   return (
     <>
