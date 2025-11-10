@@ -26,9 +26,9 @@ function App() {
         const data = await res.json();
         console.log("AuthenticateUser response:", data);
 
-        // Adjust paths based on your API's response shape:
-        const accessToken = data?.data?.accessToken || data?.accessToken;
-        const refreshToken = data?.data?.refreshToken || data?.refreshToken;
+       
+        const accessToken = data?.data?.accessToken;
+        const refreshToken = data?.data?.refreshToken;
 
         if (accessToken && refreshToken) {
           setTokens({ accessToken, refreshToken });
