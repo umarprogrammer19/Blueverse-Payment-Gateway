@@ -69,7 +69,7 @@ export default function CheckoutForm() {
                         </section>
 
                         {/* Payment Information */}
-                        <section className="bg-white rounded-lg p-6">
+                        {/* <section className="bg-white rounded-lg p-6">
                             <div className="flex items-center gap-3 mb-6 pb-4 border-b-2 border-dashed border-gray-200">
                                 <div className="bg-blue-100 p-2 rounded">
                                     <CreditCard size={20} className="text-blue-600" />
@@ -82,7 +82,7 @@ export default function CheckoutForm() {
                                 showSecurity={showSecurity}
                                 setShowSecurity={setShowSecurity}
                             />
-                        </section>
+                        </section> */}
                     </div>
                 </div>
 
