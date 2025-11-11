@@ -4,6 +4,7 @@ import './index.css'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import Layout from './layout.jsx';
 import Membership from './pages/membership.jsx';
+import Payment from './pages/payment.jsx';
 
 const router = createBrowserRouter([
   {
