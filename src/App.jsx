@@ -161,7 +161,11 @@ function App() {
       }
       setSiteId(formData.assignToLocSite);
       localStorage.setItem("siteId", String(formData.assignToLocSite));
-      window.location.href = `/membership${window.location.hash}`;
+      if (window.location.hash && window.location.hash !== "#membership" && window.location.href !== "/membership")
+        window.location.href = `/wash${window.location.hash}`;
+      else
+        window.location.href = `/membership`;
+
     } catch (err) {
       console.error("Proceed/Customer flow error:", err);
     } finally {
