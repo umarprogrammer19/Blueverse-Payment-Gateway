@@ -3,6 +3,7 @@ import App from './App.jsx'
 import './index.css'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import Layout from './layout.jsx';
+import Membership from './pages/membership.jsx';
 
 const router = createBrowserRouter([
   {
