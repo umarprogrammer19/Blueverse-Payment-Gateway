@@ -2,12 +2,13 @@ import { User } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { setTokens } from "./auth";
 import PersonalInfo from "./components/sections/PersonalInfo";
+import { useCheckout } from "./context/CheckoutContext";
 
 function App() {
   const [siteData, setSiteData] = useState(null);
-  const [apiKey, setApiKey] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const { setApiKey, setSiteId, setCustomerId, apiKey } = useCheckout();
   const id = window.location.hash;
 
   const [formData, setFormData] = useState({
@@ -153,8 +154,8 @@ function App() {
       } else {
         console.log("Existing customer found:", existing);
       }
-
-      // >>> redirect to membership with same hash
+      setSiteId(formData.assignToLocSite);        
+      setCustomerId(foundOrCreatedCustomerId ?? null);
       window.location.href = `/membership${window.location.hash}`;
     } catch (err) {
       console.error("Proceed/Customer flow error:", err);
