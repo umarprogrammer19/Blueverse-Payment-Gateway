@@ -2,6 +2,7 @@
 import { useEffect, useMemo, useState } from "react";
 import ProductSelect from "../components/sections/ProductSelect";
 import PurchaseSummary from "../components/sections/PurchaseSummary";
+import { useCheckout } from "../context/CheckoutContext";
 
 const hashToProduct = (hash) => {
     if (/#checkout-express-wash/i.test(hash)) return "business";  // Express
@@ -23,6 +24,15 @@ export default function Membership() {
 
     // NEW: single selection (one package)
     const [selectedId, setSelectedId] = useState(null);
+    const {
+        selectedMembership, setSelectedMembership,
+        selectedServices, setSelectedServices,
+        derivedTotals,
+    } = useCheckout();
+
+    const handleChooseMembership = (m) => {
+        setSelectedMembership({ membershipId: m.membershipId, isNewSignUp: true, price: m.price ?? 0 });
+    };
 
     // keep URL hash in sync
     useEffect(() => {
@@ -76,8 +86,8 @@ export default function Membership() {
     );
 
     const subtotal = selectedItem ? Number(selectedItem.washbookPrice || 0) : 0;
-    const discounts = 0; // plug your coupon logic later
-    const tax = 0;       // plug your tax calculation later
+    const discounts = 0; 
+    const tax = 0;       
     const total = Math.max(subtotal - discounts + tax, 0);
 
     const handleApplyCoupon = () => {
@@ -93,6 +103,7 @@ export default function Membership() {
 
     return (
         <div className="container mx-auto py-14 max-w-2xl">
+            
             {/* Only selector is ProductSelect */}
             <ProductSelect value={product} onChange={setProduct} />
 
