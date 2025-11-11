@@ -5,6 +5,7 @@ import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import Layout from './layout.jsx';
 import Membership from './pages/membership.jsx';
 import Payment from './pages/payment.jsx';
+import { CheckoutProvider } from './context/CheckoutContext.jsx';
 
 const router = createBrowserRouter([
   {
@@ -29,5 +30,7 @@ const router = createBrowserRouter([
 ]);
 
 createRoot(document.getElementById('root')).render(
-  <RouterProvider router={router} />
+  <CheckoutProvider>
+    <RouterProvider router={router} />
+  </CheckoutProvider>
 )
