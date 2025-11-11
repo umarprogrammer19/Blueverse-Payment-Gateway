@@ -7,8 +7,11 @@ function App() {
   const [siteData, setSiteData] = useState(null);
   const [apiKey, setApiKey] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const id = window.location.hash;
+
+  const [customerId, setCustomerId] = useState(null);
+  const [vehicleId, setVehicleId] = useState(null);
+  const [selectedServices, setSelectedServices] = useState([]); 
+  const [selectedMembership, setSelectedMembership] = useState(null); 
 
   const [formData, setFormData] = useState({
     firstName: "",
@@ -20,7 +23,7 @@ function App() {
     expirationDate: "",
     securityCode: "",
     billingZip: "",
-    couponCode: "",
+    couponCode: "", // <-- promo code lives here
     dateOfBirth: "",
     address: "",
     assignToLocSite: "",
@@ -35,6 +38,13 @@ function App() {
     activeCustomer: true,
   });
 
+  const sites = Array.isArray(siteData?.data) ? siteData.data : [];
+  const selectedSite = useMemo(() => {
+    return sites.find(
+      s => String(s?.id ?? s?.siteId) === String(formData.assignToLocSite)
+    );
+  }, [sites, formData.assignToLocSite]);
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -43,48 +53,47 @@ function App() {
     setFormData((prev) => ({ ...prev, [name]: !prev[name] }));
   };
 
-  // Required fields to enable/show Next
-  const canProceed = useMemo(() => {
-    return (
-      formData.firstName.trim() &&
-      formData.lastName.trim() &&
-      formData.email.trim() &&
-      formData.assignToLocSite
-    );
-  }, [formData]);
-
   useEffect(() => {
     (async () => {
       try {
-        const authRes = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/External/AuthenticateUser`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            emailOrPhone: import.meta.env.VITE_UEMAIL,
-            password: import.meta.env.VITE_UPASSWORD,
-          }),
-        });
+        const authRes = await fetch(
+          `${import.meta.env.VITE_API_BASE_URL}/api/External/AuthenticateUser`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              emailOrPhone: import.meta.env.VITE_UEMAIL,
+              password: import.meta.env.VITE_UPASSWORD,
+            }),
+          }
+        );
         if (!authRes.ok) return console.error("Auth failed:", authRes.status);
 
         const authData = await authRes.json();
+        console.log("AuthenticateUser response:", authData);
+
         const accessToken = authData?.data?.accessToken;
         const refreshToken = authData?.data?.refreshToken;
         const keyFromLogin = authData?.data?.key;
+        if (!accessToken || !refreshToken) return console.warn("Tokens missing");
 
-        if (!accessToken || !refreshToken) return console.warn("Missing tokens");
         setTokens({ accessToken, refreshToken });
-        if (keyFromLogin) {
-          setApiKey(keyFromLogin);
-          localStorage.setItem("apiKey", keyFromLogin);
-        }
+        if (keyFromLogin) setApiKey(keyFromLogin);
 
-        // Sites
+        // get sites
         const sitesRes = await fetch(
           `${import.meta.env.VITE_API_BASE_URL}/api/external/sites?key=${keyFromLogin}`,
-          { method: "GET", headers: { "Content-Type": "application/json", Authorization: `Bearer ${accessToken}` } }
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${accessToken}`,
+            },
+          }
         );
         const sitesData = await sitesRes.json();
         setSiteData(sitesData);
+        console.log("Sites Response:", sitesData);
 
         scheduleTokenRefresh();
       } catch (e) {
@@ -93,71 +102,56 @@ function App() {
     })();
   }, []);
 
-  const handleProceedToCheckout = async () => {
-    if (!canProceed) return setError("Please fill in all required fields.");
+
+  const handleApplyDiscount = async () => {
     try {
       setLoading(true);
       const base = import.meta.env.VITE_API_BASE_URL;
       const token = localStorage.getItem("accessToken");
-      const key = apiKey || localStorage.getItem("apiKey") || "";
+      const key = apiKey || import.meta.env.VITE_API_KEY || "";
+      const promo = (formData.couponCode || "").trim();
 
-      // GET customers
-      const listRes = await fetch(`${base}/api/customer?key=${key}`, {
-        method: "GET",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-      });
-      const listData = await listRes.json();
-      const customers = Array.isArray(listData?.data) ? listData.data : [];
-      const email = formData.email.trim().toLowerCase();
-      const existing = customers.find((c) => (c.emailId || "").trim().toLowerCase() === email);
-
-      if (!existing) {
-        // CREATE customer
-        const body = {
-          key,
-          address: formData.address || "",
-          allowInvoicing: !!formData.allowInvoicing,
-          blackList: !!formData.blacklistedCustomer,
-          ccNumber: "",
-          ccToken: "",
-          ccType: "",
-          cityId: 0,
-          dateOfBirth: formData.dateOfBirth ? `${formData.dateOfBirth}T00:00:00` : null,
-          emailId: formData.email || "",
-          expiryMonth: "",
-          expiryYear: "",
-          firstName: formData.firstName || "",
-          isActive: true,
-          isCardOnFile: false,
-          isSendEmail: !!formData.sendEmail,
-          isSendText: !!formData.sendText,
-          isTcpaEnabled: false,
-          lastName: formData.lastName,
-          loyaltyPoints: Number(formData.loyaltyPoints || 0),
-          nameOnCard: "",
-          phone: formData.phone || "",
-          recurringData: "",
-          siteId: String(formData.assignToLocSite),
-          stateId: 54,
-          zipCode: formData.zipCode || "",
-        };
-
-        const createRes = await fetch(`${base}/api/customer`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-          body: JSON.stringify(body),
-        });
-        const createData = await createRes.json();
-        if (!createRes.ok) return console.error("Create customer failed:", createData);
-        console.log("Customer created:", createData?.data ?? createData);
-      } else {
-        console.log("Existing customer found:", existing);
+      if (!promo) {
+        console.warn("Please enter a discount/promo code.");
+        return;
+      }
+      if (!formData.assignToLocSite) {
+        console.warn("Please select a Site first.");
+        return;
       }
 
-      // >>> redirect to membership with same hash
-      window.location.href = `/membership${window.location.hash}`;
-    } catch (err) {
-      console.error("Proceed/Customer flow error:", err);
+      // Build payload from what we have
+      const payload = buildInvoicePayload({
+        key,
+        siteId: Number(formData.assignToLocSite) || formData.assignToLocSite,
+        promoCode: promo,
+        customerId,
+        vehicleId,
+        services: selectedServices,
+        membership: selectedMembership,
+      });
+
+      const res = await fetch(`${base}/api/invoice/gettotalamount`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        console.error("gettotalamount failed:", data);
+        return;
+      }
+
+      console.log("gettotalamount payload →", payload);
+      console.log("gettotalamount response ←", data);
+      // yahan aap UI par totals dikhana chahen to state me rakh sakte hain
+      // setInvoiceTotals(data);
+    } catch (e) {
+      console.error("Apply Discount error:", e);
     } finally {
       setLoading(false);
     }
@@ -173,7 +167,7 @@ function App() {
                 <div className="bg-blue-100 p-2 rounded">
                   <User size={20} className="text-blue-600" />
                 </div>
-                <h2 className="text-lg font-semibold text-gray-900">{id === "#checkout-express-wash" ? "Express Wash" : id === "#checkout-manual-wash" ? "Manual Wash" : "Memberships"}</h2>
+                <h2 className="text-lg font-semibold text-gray-900">Personal information</h2>
               </div>
 
               <PersonalInfo
@@ -181,21 +175,9 @@ function App() {
                 formData={formData}
                 onChange={handleInputChange}
                 onToggle={handleToggle}
+                onApplyCoupon={handleApplyDiscount} 
+                applying={loading}
               />
-
-              {error && <p className="text-red-500 text-md mt-2">{error}</p>}
-
-              {/* Next button only when required fields ready */}
-              <div className="mt-6">
-                <button
-                  type="button"
-                  onClick={handleProceedToCheckout}
-                  disabled={loading}
-                  className="px-5 py-2 rounded-lg bg-blue-600 text-white disabled:opacity-60"
-                >
-                  {loading ? "Please wait..." : "Next"}
-                </button>
-              </div>
             </section>
           </div>
         </div>
@@ -206,7 +188,99 @@ function App() {
 
 export default App;
 
-// refresh helpers (same as before)
+// ----------------------------------
+// helpers
+// ----------------------------------
+function buildInvoicePayload({
+  key,
+  siteId,
+  promoCode,
+  customerId = null,
+  vehicleId = null,
+  services = [],
+  membership = null,
+}) {
+  const base = {
+    key,
+    siteId,
+    customerData: customerId ? { customerId } : undefined,
+    vehicleData: vehicleId ? { vehicleId } : undefined,
+
+    // If you have real amounts, set them. For now 0 (API will calculate).
+    totalAmount: 0,
+    subtotal: 0,
+    redemptions: 0,
+    discounts: 0,
+    tax: 0,
+
+    status: "draft",
+    source: "web",
+    sourceId: 0,
+    siteLaneId: 0,
+    notes: "",
+    captureMethod: "manual",
+    appVersion: "web",
+
+    serviceSaleList: Array.isArray(services)
+      ? services.map((s) => ({
+        serviceId: s.serviceId ?? 0,
+        amount: Number(s.amount ?? 0),
+        isRecurring: !!s.isRecurring,
+        isPrepaid: !!s.isPrepaid,
+        isWashbook: !!s.isWashbook,
+        redeemId: s.redeemId ?? 0,
+      }))
+      : [],
+
+    membershipSaleList: membership
+      ? [{ membershipId: membership.membershipId, isNewSignUp: !!membership.isNewSignUp }]
+      : [],
+
+    paymentTypeList: [], // only for totals calc — keep empty
+    giftCardSaleList: [],
+    washbookSaleList: [],
+    giftCardRedeemList: [],
+    washbookRedeemList: [],
+
+    // PROMO CODE lands here:
+    discountRedeemList: promoCode
+      ? [
+        {
+          discountId: 0,
+          instanceType: "code",
+          // Backend often accepts the code as "instanceId" when instanceType === "code"
+          // If your API wants a numeric discountId instead, replace this with that.
+          instanceId: promoCode,
+          membershipId: 0,
+          discountValue: 0,
+        },
+      ]
+      : [],
+  };
+
+  return deepStripUndefined(base);
+}
+
+// remove undefined keys recursively to keep payload clean
+function deepStripUndefined(obj) {
+  if (Array.isArray(obj)) {
+    return obj
+      .map((v) => deepStripUndefined(v))
+      .filter((v) => v !== undefined && !(typeof v === "object" && v !== null && Object.keys(v).length === 0));
+  } else if (obj && typeof obj === "object") {
+    const out = {};
+    for (const [k, v] of Object.entries(obj)) {
+      const vv = deepStripUndefined(v);
+      if (vv !== undefined && !(typeof vv === "object" && vv !== null && Object.keys(vv).length === 0)) {
+        out[k] = vv;
+      }
+    }
+    return out;
+  }
+  return obj;
+}
+
+// refresh helpers
 async function doRefresh() {
   try {
     const base = import.meta.env.VITE_API_BASE_URL;
