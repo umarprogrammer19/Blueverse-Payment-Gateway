@@ -113,7 +113,7 @@ export default function Membership() {
                                 key={p.washbookId}
                                 type="button"
                                 onClick={() => setSelectedId(String(p.washbookId))}
-                                className={`p-4 border rounded-lg bg-white text-left transition
+                                className={`p-4 cursor-pointer border rounded-lg bg-white text-left transition
                   ${isSelected ? "border-blue-600 ring-2 ring-blue-200" : "hover:border-gray-400"}`}
                             >
                                 <div className="flex items-center justify-between">
