@@ -13,7 +13,7 @@ const productToHash = (p) =>
         : p === "premium" ? "#checkout-manual-wash"
             : "#checkout-wash";
 
-export default function Membership() {
+export default function Washbook() {
     const [items, setItems] = useState([]);
     const [couponCode, setCouponCode] = useState("");
     const [loading, setLoading] = useState(true);
