@@ -8,6 +8,14 @@ const router = createBrowserRouter([
     path: "/",
     element: <App />,
   },
+  {
+    path: "/membership",
+    element: <Membership />,
+  },
+  {
+    path: "/payment",
+    element: <Payment />,
+  },
 ]);
 
 createRoot(document.getElementById('root')).render(
