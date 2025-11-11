@@ -6,12 +6,12 @@ import PurchaseSummary from "../components/sections/PurchaseSummary";
 const hashToProduct = (hash) => {
     if (/#checkout-express-wash/i.test(hash)) return "business";
     if (/#checkout-manual-wash/i.test(hash)) return "premium";
-    return "memberships";
+    return "30 Package Wash";
 };
 const productToHash = (p) =>
     p === "business" ? "#checkout-express-wash"
         : p === "premium" ? "#checkout-manual-wash"
-            : "#checkout-memberships";
+            : "#checkout-wash";
 
 export default function Membership() {
     const [items, setItems] = useState([]);
@@ -21,7 +21,7 @@ export default function Membership() {
     const [applying, setApplying] = useState(false);
     const [serverTotals, setServerTotals] = useState(null);
 
-    const initial = typeof window !== "undefined" ? hashToProduct(window.location.hash) : "memberships";
+    const initial = typeof window !== "undefined" ? hashToProduct(window.location.hash) : "30 Package Wash";
     const [product, setProduct] = useState(initial);
 
     const [selectedId, setSelectedId] = useState(null);
@@ -181,7 +181,7 @@ export default function Membership() {
             <h2 className="mt-8 mb-4 text-xl font-semibold">
                 {product === "business" ? "Express Wash"
                     : product === "premium" ? "Manual Wash"
-                        : "Memberships"}
+                        : "30 Package Wash"}
             </h2>
 
             {loading ? (
