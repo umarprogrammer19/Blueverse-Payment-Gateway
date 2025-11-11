@@ -22,6 +22,7 @@ export default function PersonalInfo({ formData, onChange, onToggle, siteData })
                         type="text"
                         name="firstName"
                         placeholder="First name"
+                        required
                         value={formData.firstName}
                         onChange={onChange}
                         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
@@ -32,6 +33,7 @@ export default function PersonalInfo({ formData, onChange, onToggle, siteData })
                     <input
                         type="tel"
                         name="phone"
+                        required
                         placeholder="Phone number"
                         value={formData.phone}
                         onChange={onChange}
@@ -45,6 +47,7 @@ export default function PersonalInfo({ formData, onChange, onToggle, siteData })
                     <input
                         type="text"
                         name="lastName"
+                        required
                         placeholder="Last name"
                         value={formData.lastName}
                         onChange={onChange}
@@ -56,6 +59,7 @@ export default function PersonalInfo({ formData, onChange, onToggle, siteData })
                     <input
                         type="email"
                         name="email"
+                        required
                         placeholder="Email address"
                         value={formData.email}
                         onChange={onChange}

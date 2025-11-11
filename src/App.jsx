@@ -2,14 +2,13 @@ import { User } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { setTokens } from "./auth";
 import PersonalInfo from "./components/sections/PersonalInfo";
-import { useSearchParams } from "react-router-dom";
 
 function App() {
   const [siteData, setSiteData] = useState(null);
   const [apiKey, setApiKey] = useState("");
   const [loading, setLoading] = useState(false);
-  const [searchParams] = useSearchParams();
-  console.log(searchParams);
+  const [error, setError] = useState("");
+  const id = window.location.hash;
 
   const [formData, setFormData] = useState({
     firstName: "",
@@ -112,6 +111,7 @@ function App() {
 
   // NEXT: check → create → console redirect
   const handleProceedToCheckout = async () => {
+    if (!canProceed) return setError("Please fill in all required fields.");
     try {
       setLoading(true);
       const base = import.meta.env.VITE_API_BASE_URL;
@@ -206,7 +206,7 @@ function App() {
                 <div className="bg-blue-100 p-2 rounded">
                   <User size={20} className="text-blue-600" />
                 </div>
-                <h2 className="text-lg font-semibold text-gray-900">Personal information</h2>
+                <h2 className="text-lg font-semibold text-gray-900">{id === "#checkout-express-wash" ? "Express Wash" : id === "#checkout-manual-wash" ? "Manual Wash" : "Memberships"}</h2>
               </div>
 
               <PersonalInfo
@@ -216,19 +216,19 @@ function App() {
                 onToggle={handleToggle}
               />
 
+              {error && <p className="text-red-500 text-md mt-2">{error}</p>}
+
               {/* Next button only when required fields ready */}
-              {canProceed && (
-                <div className="mt-6">
-                  <button
-                    type="button"
-                    onClick={handleProceedToCheckout}
-                    disabled={loading}
-                    className="px-5 py-2 rounded-lg bg-blue-600 text-white disabled:opacity-60"
-                  >
-                    {loading ? "Please wait..." : "Next"}
-                  </button>
-                </div>
-              )}
+              <div className="mt-6">
+                <button
+                  type="button"
+                  onClick={handleProceedToCheckout}
+                  disabled={loading}
+                  className="px-5 py-2 rounded-lg bg-blue-600 text-white disabled:opacity-60"
+                >
+                  {loading ? "Please wait..." : "Next"}
+                </button>
+              </div>
             </section>
           </div>
         </div>
