@@ -21,6 +21,10 @@ const router = createBrowserRouter([
         element: <Washbook />,
       },
       {
+        path: "/membership",
+        element: <Membership />,
+      },
+      {
         path: "/payment",
         element: <Payment />,
       },
