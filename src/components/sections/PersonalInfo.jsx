@@ -14,15 +14,6 @@ export default function PersonalInfo({ formData, onChange, onToggle, siteData })
 
     return (
         <div>
-            <p className="text-sm text-gray-600 mb-6">
-                Please fill out the information, and we will automatically create an account or{" "}
-                <a href="#" className="text-blue-600 hover:underline">
-                    Log in
-                </a>{" "}
-                if you are already a member
-            </p>
-
-            {/* Basic Information */}
             <div className="grid grid-cols-2 gap-4 mb-6">
                 <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
