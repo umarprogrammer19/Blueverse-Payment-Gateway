@@ -164,9 +164,7 @@ export default function Membership() {
             <ProductSelect value={product} onChange={setProduct} />
 
             <h2 className="mt-8 mb-4 text-xl font-semibold">
-                {product === "business" ? "Express Wash"
-                    : product === "premium" ? "Manual Wash"
-                        : "30 Package Wash"}
+               Membership
             </h2>
 
             {loading ? (
