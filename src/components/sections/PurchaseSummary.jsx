@@ -2,13 +2,11 @@
 import { Check } from "lucide-react";
 
 export default function PurchaseSummary({
-    // NEW props
     selectedPackage,
     subtotal = 0,
     discounts = 0,
     tax = 0,
     total = 0,
-    // existing props
     couponCode,
     onCouponChange,
     onApplyCoupon,

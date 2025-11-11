@@ -111,9 +111,9 @@ function App() {
       const customers = Array.isArray(listData?.data) ? listData.data : [];
       const email = formData.email.trim().toLowerCase();
       const existing = customers.find((c) => (c.emailId || "").trim().toLowerCase() === email);
+      existing && localStorage.setItem("customerId", String(existing.customerId));
 
       if (!existing) {
-        // CREATE customer
         const body = {
           key,
           address: formData.address || "",
@@ -150,12 +150,17 @@ function App() {
         });
         const createData = await createRes.json();
         if (!createRes.ok) return console.error("Create customer failed:", createData);
+        const newId = createData?.data?.customerId;
+        if (newId) {
+          setCustomerId(newId);
+          localStorage.setItem("customerId", String(newId));
+        }
         console.log("Customer created:", createData?.data ?? createData);
       } else {
         console.log("Existing customer found:", existing);
       }
-      setSiteId(formData.assignToLocSite);        
-      setCustomerId(foundOrCreatedCustomerId ?? null);
+      setSiteId(formData.assignToLocSite);
+      localStorage.setItem("siteId", String(formData.assignToLocSite));
       window.location.href = `/membership${window.location.hash}`;
     } catch (err) {
       console.error("Proceed/Customer flow error:", err);
