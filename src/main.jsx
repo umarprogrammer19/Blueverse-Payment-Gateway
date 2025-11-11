@@ -6,6 +6,7 @@ import Layout from './layout.jsx';
 import Washbook from './pages/washbook.jsx';
 import Payment from './pages/payment.jsx';
 import { CheckoutProvider } from './context/CheckoutContext.jsx';
+import Membership from './pages/membersip.jsx';
 
 const router = createBrowserRouter([
   {
