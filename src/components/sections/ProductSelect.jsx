@@ -2,6 +2,7 @@
 export default function ProductSelect({ value, onChange }) {
     return (
         <div>
+            <p className="text-md relative left-1 font-medium mb-3 text-gray-900">Select a product</p>
             <select
                 value={value}
                 onChange={(e) => onChange(e.target.value)}
