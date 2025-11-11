@@ -2,7 +2,13 @@
 import { Check } from "lucide-react";
 
 export default function PurchaseSummary({
-    packages = [],
+    // NEW props
+    selectedPackage,
+    subtotal = 0,
+    discounts = 0,
+    tax = 0,
+    total = 0,
+    // existing props
     couponCode,
     onCouponChange,
     onApplyCoupon,
@@ -24,56 +30,62 @@ export default function PurchaseSummary({
                         onChange={onCouponChange}
                         className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
                     />
-                    <button onClick={onApplyCoupon} className="px-6 py-2 bg-gray-500 hover:bg-gray-600 text-white font-medium rounded-lg transition-colors">
+                    <button
+                        onClick={onApplyCoupon}
+                        className="px-6 py-2 bg-gray-500 hover:bg-gray-600 text-white font-medium rounded-lg transition-colors"
+                    >
                         Apply
                     </button>
                 </div>
             </div>
 
-            {/* Package Prices (drilled via props) */}
-            {packages.length > 0 && (
-                <div className="space-y-2">
-                    <h4 className="font-semibold">Packages</h4>
-                    {packages.map((p) => (
-                        <div key={p.washbookId} className="flex justify-between text-sm">
-                            <span className="text-gray-700">{p.washbookName}</span>
-                            <span className="text-gray-900">${Number(p.washbookPrice || 0).toFixed(2)}</span>
-                        </div>
-                    ))}
-                </div>
-            )}
+            {/* Selected Package */}
+            <div className="space-y-2">
+                <h4 className="font-semibold">Selected package</h4>
+                {selectedPackage ? (
+                    <div className="flex justify-between text-sm">
+                        <span className="text-gray-700">{selectedPackage.washbookName}</span>
+                        <span className="text-gray-900">
+                            ${Number(selectedPackage.washbookPrice || 0).toFixed(2)}
+                        </span>
+                    </div>
+                ) : (
+                    <div className="text-sm text-gray-500">Please select a package above.</div>
+                )}
+            </div>
 
-            {/* Order Summary (static unless you want total of selected items) */}
+            {/* Order Summary */}
             <div className="space-y-3 py-4 border-t border-gray-200">
                 <div className="flex justify-between text-sm">
                     <span className="text-gray-600">Subtotal</span>
-                    <span className="text-gray-900">$0.00</span>
+                    <span className="text-gray-900">${Number(subtotal).toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between text-sm">
                     <span className="text-gray-600">Discounts</span>
-                    <span className="text-gray-900">$0.00</span>
+                    <span className="text-gray-900">-${Number(discounts).toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between text-sm">
                     <span className="text-gray-600">Tax</span>
-                    <span className="text-gray-900">$0.00</span>
+                    <span className="text-gray-900">${Number(tax).toFixed(2)}</span>
                 </div>
             </div>
 
             {/* Total */}
             <div className="flex justify-between items-center py-4 border-t border-gray-200 border-b">
                 <span className="font-semibold text-gray-900">Total</span>
-                <span className="text-xl font-bold text-gray-900">$0.00</span>
+                <span className="text-xl font-bold text-gray-900">${Number(total).toFixed(2)}</span>
             </div>
 
-            {/* Checkout Button */}
+            {/* Checkout */}
             <button
                 onClick={onCheckout}
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition-colors"
+                disabled={!selectedPackage}
+                className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white font-bold py-3 px-4 rounded-lg transition-colors"
             >
                 CHECKOUT
             </button>
 
-            {/* Terms and Payment */}
+            {/* Terms + Security */}
             <div className="space-y-4">
                 <div className="flex items-center gap-2">
                     <input type="checkbox" id="terms" className="w-4 h-4 border border-gray-300 rounded cursor-pointer" />
