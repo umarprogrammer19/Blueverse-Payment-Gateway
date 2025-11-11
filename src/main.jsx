@@ -3,7 +3,7 @@ import App from './App.jsx'
 import './index.css'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import Layout from './layout.jsx';
-import Membership from './pages/membership.jsx';
+import Washbook from './pages/washbook.jsx';
 import Payment from './pages/payment.jsx';
 import { CheckoutProvider } from './context/CheckoutContext.jsx';
 
@@ -17,8 +17,8 @@ const router = createBrowserRouter([
         element: <App />,
       },
       {
-        path: "/membership",
-        element: <Membership />,
+        path: "/wash",
+        element: <Washbook />,
       },
       {
         path: "/payment",
