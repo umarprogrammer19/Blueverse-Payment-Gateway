@@ -56,139 +56,106 @@ function App() {
   useEffect(() => {
     (async () => {
       try {
-        const authRes = await fetch(
-          `${import.meta.env.VITE_API_BASE_URL}/api/External/AuthenticateUser`,
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              emailOrPhone: import.meta.env.VITE_UEMAIL,
-              password: import.meta.env.VITE_UPASSWORD,
-            }),
-          }
-        );
-        if (!authRes.ok) {
-          console.error("Auth failed with status:", authRes.status);
-          return;
-        }
+        const authRes = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/External/AuthenticateUser`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            emailOrPhone: import.meta.env.VITE_UEMAIL,
+            password: import.meta.env.VITE_UPASSWORD,
+          }),
+        });
+        if (!authRes.ok) return console.error("Auth failed:", authRes.status);
 
         const authData = await authRes.json();
-        console.log("AuthenticateUser response:", authData);
-
         const accessToken = authData?.data?.accessToken;
         const refreshToken = authData?.data?.refreshToken;
         const keyFromLogin = authData?.data?.key;
 
-        if (!accessToken || !refreshToken) {
-          console.warn("Tokens not found in response.");
-          return;
-        }
+        if (!accessToken || !refreshToken) return console.warn("Missing tokens");
         setTokens({ accessToken, refreshToken });
-        if (keyFromLogin) setApiKey(keyFromLogin);
+        if (keyFromLogin) {
+          setApiKey(keyFromLogin);
+          localStorage.setItem("apiKey", keyFromLogin);
+        }
 
         // Sites
         const sitesRes = await fetch(
           `${import.meta.env.VITE_API_BASE_URL}/api/external/sites?key=${keyFromLogin}`,
-          {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${accessToken}`,
-            },
-          }
+          { method: "GET", headers: { "Content-Type": "application/json", Authorization: `Bearer ${accessToken}` } }
         );
-        if (!sitesRes.ok) console.error("Sites fetch failed:", sitesRes.status);
         const sitesData = await sitesRes.json();
         setSiteData(sitesData);
-        console.log("Sites Response:", sitesData);
 
         scheduleTokenRefresh();
-      } catch (error) {
-        console.error("Error during API calls:", error);
+      } catch (e) {
+        console.error(e);
       }
     })();
   }, []);
 
-  // NEXT: check → create → console redirect
   const handleProceedToCheckout = async () => {
     if (!canProceed) return setError("Please fill in all required fields.");
     try {
       setLoading(true);
       const base = import.meta.env.VITE_API_BASE_URL;
       const token = localStorage.getItem("accessToken");
-      const key = apiKey || import.meta.env.VITE_API_KEY || "";
+      const key = apiKey || localStorage.getItem("apiKey") || "";
 
-      // 1) list customers
+      // GET customers
       const listRes = await fetch(`${base}/api/customer?key=${key}`, {
         method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
       });
       const listData = await listRes.json();
-      if (!listRes.ok) {
-        console.error("Customer list failed:", listData);
-        return;
-      }
       const customers = Array.isArray(listData?.data) ? listData.data : [];
       const email = formData.email.trim().toLowerCase();
-      const existing = customers.find(
-        (c) => (c.emailId || "").trim().toLowerCase() === email
-      );
+      const existing = customers.find((c) => (c.emailId || "").trim().toLowerCase() === email);
 
-      if (existing) {
+      if (!existing) {
+        // CREATE customer
+        const body = {
+          key,
+          address: formData.address || "",
+          allowInvoicing: !!formData.allowInvoicing,
+          blackList: !!formData.blacklistedCustomer,
+          ccNumber: "",
+          ccToken: "",
+          ccType: "",
+          cityId: 0,
+          dateOfBirth: formData.dateOfBirth ? `${formData.dateOfBirth}T00:00:00` : null,
+          emailId: formData.email || "",
+          expiryMonth: "",
+          expiryYear: "",
+          firstName: formData.firstName || "",
+          isActive: true,
+          isCardOnFile: false,
+          isSendEmail: !!formData.sendEmail,
+          isSendText: !!formData.sendText,
+          isTcpaEnabled: false,
+          lastName: formData.lastName,
+          loyaltyPoints: Number(formData.loyaltyPoints || 0),
+          nameOnCard: "",
+          phone: formData.phone || "",
+          recurringData: "",
+          siteId: String(formData.assignToLocSite),
+          stateId: 54,
+          zipCode: formData.zipCode || "",
+        };
+
+        const createRes = await fetch(`${base}/api/customer`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+          body: JSON.stringify(body),
+        });
+        const createData = await createRes.json();
+        if (!createRes.ok) return console.error("Create customer failed:", createData);
+        console.log("Customer created:", createData?.data ?? createData);
+      } else {
         console.log("Existing customer found:", existing);
-        console.log("redirect to checkout");
-        return;
       }
 
-      // 2) create customer
-      const body = {
-        key,
-        address: formData.address || "",
-        allowInvoicing: !!formData.allowInvoicing,
-        blackList: !!formData.blacklistedCustomer,
-        ccNumber: "",
-        ccToken: "",
-        ccType: "",
-        cityId: 0,
-        dateOfBirth: formData.dateOfBirth ? `${formData.dateOfBirth}T00:00:00` : null,
-        emailId: formData.email || "",
-        expiryMonth: "",
-        expiryYear: "",
-        firstName: formData.firstName || "",
-        isActive: true,
-        isCardOnFile: false,
-        isSendEmail: !!formData.sendEmail,
-        isSendText: !!formData.sendText,
-        isTcpaEnabled: false,
-        lastName: formData.lastName,
-        loyaltyPoints: Number(formData.loyaltyPoints || 0),
-        nameOnCard: "",
-        phone: formData.phone || "",
-        recurringData: "",
-        siteId: String(formData.assignToLocSite), // from site dropdown
-        stateId: 54,
-        zipCode: formData.zipCode || "",
-      };
-
-      const createRes = await fetch(`${base}/api/customer`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(body),
-      });
-      const createData = await createRes.json();
-      if (!createRes.ok) {
-        console.error("Create customer failed:", createData);
-        return;
-      }
-
-      console.log("Customer created:", createData?.data ?? createData);
-      console.log("redirect to checkout");
+      // >>> redirect to membership with same hash
+      window.location.href = `/membership${window.location.hash}`;
     } catch (err) {
       console.error("Proceed/Customer flow error:", err);
     } finally {
