@@ -21,14 +21,17 @@ export default function Membership() {
     const initial = typeof window !== "undefined" ? hashToProduct(window.location.hash) : "memberships";
     const [product, setProduct] = useState(initial);
 
-    // keep URL hash in sync with dropdown
+    // NEW: single selection (one package)
+    const [selectedId, setSelectedId] = useState(null);
+
+    // keep URL hash in sync
     useEffect(() => {
         if (typeof window !== "undefined") {
             window.location.hash = productToHash(product);
         }
     }, [product]);
 
-    // fetch washbooks once
+    // fetch washbooks
     useEffect(() => {
         (async () => {
             try {
@@ -51,30 +54,46 @@ export default function Membership() {
         })();
     }, []);
 
-    // filter by category chosen in ProductSelect
+    // filter packages by category
     const filteredPackages = useMemo(() => {
-        if (product === "business") {
-            // Express
-            return items.filter((i) => /express/i.test(i.washbookName || ""));
-        }
-        if (product === "premium") {
-            // Manual
-            return items.filter((i) => /manual/i.test(i.washbookName || ""));
-        }
-        // Memberships (Wash Books)
-        return items.filter((i) => /wash\s*book/i.test(i.washbookName || ""));
+        if (product === "business") return items.filter(i => /express/i.test(i.washbookName || ""));
+        if (product === "premium") return items.filter(i => /manual/i.test(i.washbookName || ""));
+        return items.filter(i => /wash\s*book/i.test(i.washbookName || "")); // memberships
     }, [items, product]);
+
+    // when category changes or filtered list updates, default-select first item
+    useEffect(() => {
+        if (filteredPackages.length) {
+            setSelectedId(String(filteredPackages[0].washbookId));
+        } else {
+            setSelectedId(null);
+        }
+    }, [filteredPackages]);
+
+    const selectedItem = useMemo(
+        () => filteredPackages.find(p => String(p.washbookId) === String(selectedId)) || null,
+        [filteredPackages, selectedId]
+    );
+
+    const subtotal = selectedItem ? Number(selectedItem.washbookPrice || 0) : 0;
+    const discounts = 0; // plug your coupon logic later
+    const tax = 0;       // plug your tax calculation later
+    const total = Math.max(subtotal - discounts + tax, 0);
 
     const handleApplyCoupon = () => {
         console.log("Apply coupon:", couponCode);
     };
     const handleCheckout = () => {
-        console.log("CHECKOUT clicked with packages:", filteredPackages);
+        console.log("CHECKOUT clicked with:", {
+            category: product,
+            selected: selectedItem,
+            subtotal, discounts, tax, total
+        });
     };
 
     return (
         <div className="container mx-auto py-14 max-w-2xl">
-            {/* Use ProductSelect as the only selector */}
+            {/* Only selector is ProductSelect */}
             <ProductSelect value={product} onChange={setProduct} />
 
             <h2 className="mt-8 mb-4 text-xl font-semibold">
@@ -87,27 +106,49 @@ export default function Membership() {
                 <p>No products found.</p>
             ) : (
                 <div className="grid grid-cols-1 gap-3 mb-10">
-                    {filteredPackages.map((p) => (
-                        <div key={p.washbookId} className="p-4 border rounded-lg bg-white">
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <div className="font-medium">{p.washbookName}</div>
-                                    {p.numberOfWashes && (
-                                        <div className="text-sm text-gray-600">{p.numberOfWashes} wash(es)</div>
-                                    )}
+                    {filteredPackages.map((p) => {
+                        const isSelected = String(p.washbookId) === String(selectedId);
+                        return (
+                            <button
+                                key={p.washbookId}
+                                type="button"
+                                onClick={() => setSelectedId(String(p.washbookId))}
+                                className={`p-4 border rounded-lg bg-white text-left transition
+                  ${isSelected ? "border-blue-600 ring-2 ring-blue-200" : "hover:border-gray-400"}`}
+                            >
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-3">
+                                        <input
+                                            type="radio"
+                                            readOnly
+                                            checked={isSelected}
+                                            className="w-4 h-4"
+                                        />
+                                        <div>
+                                            <div className="font-medium">{p.washbookName}</div>
+                                            {p.numberOfWashes && (
+                                                <div className="text-sm text-gray-600">{p.numberOfWashes} wash(es)</div>
+                                            )}
+                                        </div>
+                                    </div>
+                                    <div className="text-lg font-semibold">
+                                        ${Number(p.washbookPrice || 0).toFixed(2)}
+                                    </div>
                                 </div>
-                                <div className="text-lg font-semibold">
-                                    ${Number(p.washbookPrice || 0).toFixed(2)}
-                                </div>
-                            </div>
-                        </div>
-                    ))}
+                            </button>
+                        );
+                    })}
                 </div>
             )}
 
-            {/* Pass all packages/prices down to PurchaseSummary */}
             <PurchaseSummary
-                packages={filteredPackages}
+                // NEW: pass selection + numbers
+                selectedPackage={selectedItem}
+                subtotal={subtotal}
+                discounts={discounts}
+                tax={tax}
+                total={total}
+                // existing props
                 couponCode={couponCode}
                 onCouponChange={(e) => setCouponCode(e.target.value)}
                 onApplyCoupon={handleApplyCoupon}
