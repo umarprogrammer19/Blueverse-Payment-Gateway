@@ -2,11 +2,14 @@ import { User } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { setTokens } from "./auth";
 import PersonalInfo from "./components/sections/PersonalInfo";
+import { useSearchParams } from "react-router-dom";
 
 function App() {
   const [siteData, setSiteData] = useState(null);
   const [apiKey, setApiKey] = useState("");
   const [loading, setLoading] = useState(false);
+  const [searchParams] = useSearchParams();
+  console.log(searchParams);
 
   const [formData, setFormData] = useState({
     firstName: "",
@@ -47,7 +50,7 @@ function App() {
       formData.firstName.trim() &&
       formData.lastName.trim() &&
       formData.email.trim() &&
-      formData.assignToLocSite // site selected (id)
+      formData.assignToLocSite
     );
   }, [formData]);
 

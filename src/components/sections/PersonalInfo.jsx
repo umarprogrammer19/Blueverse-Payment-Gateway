@@ -11,7 +11,6 @@ export default function PersonalInfo({ formData, onChange, onToggle, siteData })
         s => String(s?.id ?? s?.siteId) === String(formData.assignToLocSite)
     );
     const cityOptions = selectedSite?.cityName ? [selectedSite.cityName] : [];
-
     return (
         <div>
             <div className="grid grid-cols-2 gap-4 mb-6">
