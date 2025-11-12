@@ -1,15 +1,9 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import CryptoJS from "crypto-js";
 import { Check } from "lucide-react";
 import moment from "moment-timezone";
-import CryptoJS from "crypto-js";
-
-/**
- * NOTE (security):
- * Replicates your HTML page exactly, including client-side signature generation.
- * In production, you should compute the signature on your server and never ship the shared secret to the client.
- */
+import { useMemo, useState } from "react";
 
 export default function PurchaseSummary({
     // your original props
