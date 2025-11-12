@@ -1,7 +1,18 @@
 "use client";
+
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Check } from "lucide-react";
+import moment from "moment-timezone";
+import CryptoJS from "crypto-js";
+
+/**
+ * NOTE (security):
+ * Replicates your HTML page exactly, including client-side signature generation.
+ * In production, you should compute the signature on your server and never ship the shared secret to the client.
+ */
 
 export default function PurchaseSummary({
+    // your original props
     selectedPackage,
     subtotal = 0,
     discounts = 0,
@@ -11,7 +22,97 @@ export default function PurchaseSummary({
     onCouponChange,
     onApplyCoupon,
     onCheckout,
+
+    environment = "https://test.ipg-online.com/connect/gateway/processing",
+    sharedSecret = "2zuW4j)G3.",
+    storeName = "811676300198",
+    language = "en_US",
+    defaultTxnType = "sale",
+    defaultCurrency = "784",
+    defaultPaymentMethod = "",
+    defaultCheckoutOption = "combinedpage",
+    responseFailURL = "https://fiservsimulator.somee.com/IPGDemo/FailureResponse",
+    responseSuccessURL = "https://fiservsimulator.somee.com/IPGDemo/SuccessResponse",
+    transactionNotificationURL = "",
 }) {
+    // UI state mirroring your HTML form
+    const [timezone, setTimezone] = useState("Asia/Dubai");
+    const [txntype, setTxntype] = useState(defaultTxnType);
+    const [currency, setCurrency] = useState(defaultCurrency);
+    const [paymentMethod, setPaymentMethod] = useState(defaultPaymentMethod);
+    const [checkoutoption, setCheckoutoption] = useState(defaultCheckoutOption);
+    const [oid, setOid] = useState("");
+
+    const txndatetime = useMemo(() => {
+        return moment().tz(timezone).format("YYYY:MM:DD-HH:mm:ss");
+    }, [timezone]);
+
+    const chargeTotal = useMemo(() => {
+        const val = Number(total ?? selectedPackage?.washbookPrice ?? 0);
+        return val.toFixed(2);
+    }, [total, selectedPackage]);
+
+    function createSignature(paymentParams, secret) {
+        const ignore = new Set(["hashExtended"]);
+        const sortedKeys = Object.keys(paymentParams)
+            .filter((k) => paymentParams[k] !== "" && !ignore.has(k))
+            .sort();
+
+        const messageSignatureContent = sortedKeys.map((k) => String(paymentParams[k]));
+        const raw = messageSignatureContent.join("|");
+        const hmac = CryptoJS.HmacSHA256(raw, secret);
+        return CryptoJS.enc.Base64.stringify(hmac);
+    }
+
+    function buildPaymentParams() {
+        return {
+            hash_algorithm: "HMACSHA256",
+            language,
+            hashExtended: "",
+            txntype,
+            timezone,
+            txndatetime,
+            storename: storeName,
+            chargetotal: chargeTotal,
+            currency,
+            paymentMethod,
+            oid,
+            checkoutoption,
+            responseFailURL,
+            responseSuccessURL,
+            transactionNotificationURL,
+        };
+    }
+
+    function submitToIPG() {
+        const params = buildPaymentParams();
+        const hashExtended = createSignature(params, sharedSecret);
+        const form = document.createElement("form");
+        form.method = "POST";
+        form.action = environment;
+        const allParams = { ...params, hashExtended };
+        Object.entries(allParams).forEach(([name, value]) => {
+            const input = document.createElement("input");
+            input.type = "hidden";
+            input.name = name;
+            input.value = value ?? "";
+            form.appendChild(input);
+        });
+
+        document.body.appendChild(form);
+        form.submit();
+    }
+
+    const handleCheckout = () => {
+        if (typeof onCheckout === "function") {
+            try {
+                onCheckout();
+            } catch {
+            }
+        }
+        submitToIPG();
+    };
+
     return (
         <div className="space-y-6">
             {/* Discount Code */}
@@ -30,6 +131,7 @@ export default function PurchaseSummary({
                     />
                     <button
                         onClick={onApplyCoupon}
+                        type="button"
                         className="px-6 py-2 bg-gray-500 hover:bg-gray-600 text-white font-medium rounded-lg transition-colors"
                     >
                         Apply
@@ -42,7 +144,9 @@ export default function PurchaseSummary({
                 <h4 className="font-semibold">Selected package</h4>
                 {selectedPackage ? (
                     <div className="flex justify-between text-sm">
-                        <span className="text-gray-700">{selectedPackage.washbookName}</span>
+                        <span className="text-gray-700">
+                            {selectedPackage.washbookName}
+                        </span>
                         <span className="text-gray-900">
                             ${Number(selectedPackage.washbookPrice || 0).toFixed(2)}
                         </span>
@@ -76,7 +180,7 @@ export default function PurchaseSummary({
 
             {/* Checkout */}
             <button
-                onClick={onCheckout}
+                onClick={handleCheckout}
                 disabled={!selectedPackage}
                 className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white font-bold py-3 px-4 rounded-lg transition-colors"
             >
@@ -86,10 +190,16 @@ export default function PurchaseSummary({
             {/* Terms + Security */}
             <div className="space-y-4">
                 <div className="flex items-center gap-2">
-                    <input type="checkbox" id="terms" className="w-4 h-4 border border-gray-300 rounded cursor-pointer" />
+                    <input
+                        type="checkbox"
+                        id="terms"
+                        className="w-4 h-4 border border-gray-300 rounded cursor-pointer"
+                    />
                     <label htmlFor="terms" className="text-sm text-gray-600">
                         I agree to the{" "}
-                        <a href="#" className="text-blue-600 hover:underline">Terms of Service</a>
+                        <a href="#" className="text-blue-600 hover:underline">
+                            Terms of Service
+                        </a>
                     </label>
                 </div>
 
