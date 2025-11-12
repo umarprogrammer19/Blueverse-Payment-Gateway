@@ -6,7 +6,6 @@ import moment from "moment-timezone";
 import { useMemo, useState } from "react";
 
 export default function PurchaseSummary({
-    // your original props
     selectedPackage,
     subtotal = 0,
     discounts = 0,
@@ -16,7 +15,6 @@ export default function PurchaseSummary({
     onCouponChange,
     onApplyCoupon,
     onCheckout,
-
     environment = "https://test.ipg-online.com/connect/gateway/processing",
     sharedSecret = "2zuW4j)G3.",
     storeName = "811676300198",

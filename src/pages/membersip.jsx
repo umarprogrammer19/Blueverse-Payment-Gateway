@@ -107,7 +107,7 @@ export default function Membership() {
             const now = Date.now();
             const expOk = !match.expirationDate || new Date(match.expirationDate).getTime() > now;
             const notUsed = !match.isUsed;
-            if (!expOk || !notUsed /* || !serviceOk */) {
+            if (!expOk || !notUsed) {
                 console.warn("Code expired/used/not applicable");
                 return;
             }
@@ -122,7 +122,6 @@ export default function Membership() {
             } else if (match.discountTypeId === DISCOUNT_TYPE.FIXED) {
                 discount = +Math.min(val, sub).toFixed(2);
             } else {
-                // unknown type → treat as fixed falback
                 discount = +Math.min(val, sub).toFixed(2);
             }
 
@@ -133,15 +132,6 @@ export default function Membership() {
                 discounts: discount,
                 tax: 0,
                 totalAmount: totalAfter,
-            });
-
-            console.log("Coupon applied:", {
-                code: match.couponCode,
-                type: match.discountTypeId,
-                value: match.discountValue,
-                subtotal: sub,
-                discount,
-                total: totalAfter,
             });
         } catch (e) {
             console.error("Apply Coupon (GET list) error:", e);
@@ -164,7 +154,7 @@ export default function Membership() {
             <ProductSelect value={product} onChange={setProduct} />
 
             <h2 className="mt-8 mb-4 text-xl font-semibold">
-               Membership
+                Membership
             </h2>
 
             {loading ? (
