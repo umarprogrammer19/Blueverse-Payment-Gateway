@@ -110,7 +110,8 @@ function App() {
       const listData = await listRes.json();
       const customers = Array.isArray(listData?.data) ? listData.data : [];
       const email = formData.email.trim().toLowerCase();
-      const existing = customers.filter((c) => c.emailId == email);
+      const existing = customers.find((c) => c.emailId == email);
+      
       existing && localStorage.setItem("customerId", String(existing.customerId));
 
       if (!existing) {
