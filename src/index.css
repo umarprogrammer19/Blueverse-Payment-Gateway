@@ -3,3 +3,7 @@
 button {
     cursor: pointer;
 }
+
+body {
+  font-family: "Manrope", sans-serif;
+}
