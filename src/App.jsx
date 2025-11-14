@@ -28,7 +28,7 @@ function App() {
     zipCode: "",
     state: "",
     city: "",
-    loyaltyPoints: "",
+    loyaltyPoints: "0",
     allowInvoicing: false,
     sendText: false,
     sendEmail: false,
@@ -175,7 +175,7 @@ function App() {
 
   return (
     <main className="mx-auto px-12 py-8">
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <div className="lg:col-span-2">
           <div className="space-y-8">
             <section className="bg-white rounded-lg p-6">
@@ -183,7 +183,7 @@ function App() {
                 <div className="bg-blue-100 p-2 rounded">
                   <User size={20} className="text-blue-600" />
                 </div>
-                <h2 className="text-lg font-semibold text-gray-900">{id === "#checkout-express-wash" ? "Express Wash" : id === "#checkout-manual-wash" ? "Manual Wash" : "Memberships"}</h2>
+                <h2 className="text-lg font-semibold text-gray-900">Personal Information</h2>
               </div>
 
               <PersonalInfo
@@ -201,7 +201,7 @@ function App() {
                   type="button"
                   onClick={handleProceedToCheckout}
                   disabled={loading}
-                  className="px-5 py-2 rounded-lg bg-blue-600 text-white disabled:opacity-60"
+                  className="px-7 py-2 text-lg rounded-lg bg-blue-600 text-white disabled:opacity-60"
                 >
                   {loading ? "Please wait..." : "Next"}
                 </button>

@@ -1,6 +1,6 @@
 "use client"
 
-export default function PersonalInfo({ formData, onChange, onToggle, siteData }) {
+export default function PersonalInfo({ formData, onChange, siteData }) {
     const sites = Array.isArray(siteData?.data) ? siteData.data : [];
 
     // Unique states from all sites
@@ -151,7 +151,7 @@ export default function PersonalInfo({ formData, onChange, onToggle, siteData })
                         ))}
                     </select>
                 </div>
-                <div className="col-span-2">
+                {/* <div className="col-span-2">
                     <label className="block text-sm font-medium text-gray-700 mb-2">Loyalty points amount</label>
                     <input
                         type="text"
@@ -161,10 +161,10 @@ export default function PersonalInfo({ formData, onChange, onToggle, siteData })
                         onChange={onChange}
                         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
                     />
-                </div>
+                </div> */}
             </div>
 
-            <div className="space-y-4">
+            {/* <div className="space-y-4">
                 <div className="flex items-center justify-between py-2">
                     <label className="text-sm font-medium text-gray-700">Allow invoicing</label>
                     <button
@@ -239,7 +239,7 @@ export default function PersonalInfo({ formData, onChange, onToggle, siteData })
                         />
                     </button>
                 </div>
-            </div>
+            </div> */}
         </div>
     )
 }
