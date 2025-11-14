@@ -26,6 +26,8 @@ export default function PurchaseSummary({
     responseFailURL = "https://fiservsimulator.somee.com/IPGDemo/FailureResponse",
     responseSuccessURL = "https://fiservsimulator.somee.com/IPGDemo/SuccessResponse",
     transactionNotificationURL = "",
+    expirationDate = null,
+    isUsed = false,
 }) {
     // UI state mirroring your HTML form
     const [timezone, setTimezone] = useState("Asia/Dubai");
@@ -34,6 +36,9 @@ export default function PurchaseSummary({
     const [paymentMethod, setPaymentMethod] = useState(defaultPaymentMethod);
     const [checkoutoption, setCheckoutoption] = useState(defaultCheckoutOption);
     const [oid, setOid] = useState("");
+
+    // 🔴 NEW: coupon error state
+    const [couponError, setCouponError] = useState("");
 
     const txndatetime = useMemo(() => {
         return moment().tz(timezone).format("YYYY:MM:DD-HH:mm:ss");
@@ -100,9 +105,49 @@ export default function PurchaseSummary({
             try {
                 onCheckout();
             } catch {
+                // ignore
             }
         }
         submitToIPG();
+    };
+
+    // 🔴 NEW: validate coupon based on expirationDate & isUsed
+    function validateCoupon() {
+        // agar dono props hi na aaye ho to validation skip
+        if (!expirationDate && !isUsed) {
+            setCouponError("");
+            return true;
+        }
+
+        // expiration check
+        if (expirationDate) {
+            const now = moment();
+            const exp = moment(expirationDate);
+
+            if (exp.isBefore(now)) {
+                setCouponError("This coupon has expired.");
+                return false;
+            }
+        }
+
+        // already used check
+        if (isUsed) {
+            setCouponError("This coupon has already been used.");
+            return false;
+        }
+
+        setCouponError("");
+        return true;
+    }
+
+    // 🔴 NEW: Apply button handler
+    const handleApplyCouponClick = () => {
+        const isValid = validateCoupon();
+        if (!isValid) return;
+
+        if (typeof onApplyCoupon === "function") {
+            onApplyCoupon();
+        }
     };
 
     return (
@@ -122,13 +167,20 @@ export default function PurchaseSummary({
                         className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
                     />
                     <button
-                        onClick={onApplyCoupon}
+                        onClick={handleApplyCouponClick}
                         type="button"
                         className="px-6 py-2 bg-gray-500 hover:bg-gray-600 text-white font-medium rounded-lg transition-colors"
                     >
                         Apply
                     </button>
                 </div>
+
+                {/* Error message if coupon invalid */}
+                {couponError && (
+                    <p className="mt-1 text-sm text-red-600">
+                        {couponError}
+                    </p>
+                )}
             </div>
 
             {/* Selected Package */}
@@ -144,7 +196,9 @@ export default function PurchaseSummary({
                         </span>
                     </div>
                 ) : (
-                    <div className="text-sm text-gray-500">Please select a package above.</div>
+                    <div className="text-sm text-gray-500">
+                        Please select a package above.
+                    </div>
                 )}
             </div>
 
@@ -152,22 +206,30 @@ export default function PurchaseSummary({
             <div className="space-y-3 py-4 border-t border-gray-200">
                 <div className="flex justify-between text-sm">
                     <span className="text-gray-600">Subtotal</span>
-                    <span className="text-gray-900">${Number(subtotal).toFixed(2)}</span>
+                    <span className="text-gray-900">
+                        ${Number(subtotal).toFixed(2)}
+                    </span>
                 </div>
                 <div className="flex justify-between text-sm">
                     <span className="text-gray-600">Discounts</span>
-                    <span className="text-gray-900">-${Number(discounts).toFixed(2)}</span>
+                    <span className="text-gray-900">
+                        -${Number(discounts).toFixed(2)}
+                    </span>
                 </div>
                 <div className="flex justify-between text-sm">
                     <span className="text-gray-600">Tax</span>
-                    <span className="text-gray-900">${Number(tax).toFixed(2)}</span>
+                    <span className="text-gray-900">
+                        ${Number(tax).toFixed(2)}
+                    </span>
                 </div>
             </div>
 
             {/* Total */}
             <div className="flex justify-between items-center py-4 border-t border-gray-200 border-b">
                 <span className="font-semibold text-gray-900">Total</span>
-                <span className="text-xl font-bold text-gray-900">${Number(total).toFixed(2)}</span>
+                <span className="text-xl font-bold text-gray-900">
+                    ${Number(total).toFixed(2)}
+                </span>
             </div>
 
             {/* Checkout */}
