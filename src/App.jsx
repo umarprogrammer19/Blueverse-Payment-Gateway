@@ -1,4 +1,3 @@
-import { User } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { setTokens } from "./auth";
 import PersonalInfo from "./components/sections/PersonalInfo";
@@ -9,7 +8,6 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const { setApiKey, setSiteId, setCustomerId, apiKey } = useCheckout();
-  const id = window.location.hash;
 
   const [formData, setFormData] = useState({
     firstName: "",
@@ -111,7 +109,7 @@ function App() {
       const customers = Array.isArray(listData?.data) ? listData.data : [];
       const email = formData.email.trim().toLowerCase();
       const existing = customers.find((c) => c.emailId == email);
-      
+
       existing && localStorage.setItem("customerId", String(existing.customerId));
 
       if (!existing) {
@@ -180,12 +178,7 @@ function App() {
         <div className="lg:col-span-2">
           <div className="space-y-8">
             <section className="bg-white rounded-lg p-6">
-              <div className="flex items-center gap-3 mb-6 pb-4 border-b-2 border-dashed border-gray-200">
-                <div className="bg-blue-100 p-2 rounded">
-                  <User size={20} className="text-blue-600" />
-                </div>
-                <h2 className="text-lg font-semibold text-gray-900">Personal Information</h2>
-              </div>
+
 
               <PersonalInfo
                 siteData={siteData}
@@ -193,16 +186,17 @@ function App() {
                 onChange={handleInputChange}
                 onToggle={handleToggle}
               />
-
-              {error && <p className="text-red-500 text-md mt-2">{error}</p>}
+              <div className="mt-6 relative right-10 max-w-3xl flex justify-start mx-auto">
+                {error && <p className="text-red-500 text-md mt-2">{error}</p>}
+              </div>
 
               {/* Next button only when required fields ready */}
-              <div className="mt-6">
+              <div className="mt-6 max-w-3xl flex justify-start mx-auto">
                 <button
                   type="button"
                   onClick={handleProceedToCheckout}
                   disabled={loading}
-                  className="px-7 py-2 text-lg rounded-lg bg-blue-600 text-white disabled:opacity-60"
+                  className="px-7 relative right-10 py-2 text-lg rounded-lg bg-blue-600 text-white disabled:opacity-60"
                 >
                   {loading ? "Please wait..." : "Next"}
                 </button>

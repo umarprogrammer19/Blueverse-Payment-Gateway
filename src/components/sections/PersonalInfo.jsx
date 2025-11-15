@@ -1,245 +1,181 @@
-"use client"
+"use client";
+
+import { useState } from "react";
 
 export default function PersonalInfo({ formData, onChange, siteData }) {
     const sites = Array.isArray(siteData?.data) ? siteData.data : [];
+    const [selectedSiteId, setSelectedSiteId] = useState(formData.assignToLocSite || "");
 
-    // Unique states from all sites
-    const stateOptions = [...new Set(sites.map(s => s?.stateName).filter(Boolean))];
+    const stateOptions = [...new Set(sites.map(s => s?.stateName).filter(Boolean))].sort();
 
-    // Cities from the selected site only (if selected)
     const selectedSite = sites.find(
-        s => String(s?.id ?? s?.siteId) === String(formData.assignToLocSite)
+        s => String(s?.id ?? s?.siteId) === String(selectedSiteId || formData.assignToLocSite)
     );
+
     const cityOptions = selectedSite?.cityName ? [selectedSite.cityName] : [];
+
+    const handleSiteChange = (e) => {
+        const value = e.target.value;
+        setSelectedSiteId(value);
+        onChange(e); // Trigger parent onChange
+    };
+
     return (
-        <div>
-            <div className="grid grid-cols-2 gap-4 mb-6">
+        <div className="max-w-4xl mx-auto p-6 bg-white rounded-xl shadow-sm border border-gray-200">
+            <h2 className="text-2xl font-bold text-gray-900 mb-8">Personal Information</h2>
+
+            {/* Personal Details Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                 <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                        First name<span className="text-red-500">*</span>
+                    <label htmlFor="firstName" className="block text-sm font-semibold text-gray-700 mb-2">
+                        First Name <span className="text-red-500">*</span>
                     </label>
                     <input
+                        id="firstName"
                         type="text"
                         name="firstName"
-                        placeholder="First name"
+                        placeholder="Enter first name"
                         required
-                        value={formData.firstName}
+                        value={formData.firstName || ""}
                         onChange={onChange}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
                     />
                 </div>
+
                 <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Phone number</label>
-                    <input
-                        type="tel"
-                        name="phone"
-                        required
-                        placeholder="Phone number"
-                        value={formData.phone}
-                        onChange={onChange}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
-                    />
-                </div>
-                <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Last name<span className="text-red-500">*</span>
+                    <label htmlFor="lastName" className="block text-sm font-semibold text-gray-700 mb-2">
+                        Last Name <span className="text-red-500">*</span>
                     </label>
                     <input
+                        id="lastName"
                         type="text"
                         name="lastName"
+                        placeholder="Enter last name"
                         required
-                        placeholder="Last name"
-                        value={formData.lastName}
+                        value={formData.lastName || ""}
                         onChange={onChange}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
                     />
                 </div>
-                <div>
+                <div className="md:col-span-2">
                     <label className="block text-sm font-medium text-gray-700 mb-2">Email address</label>
+                    <input type="email" name="email" required placeholder="Email address" value={formData.email} onChange={onChange} className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors" />
+                </div>
+                <div className="md:col-span-2">
+                    <label htmlFor="phone" className="block text-sm font-semibold text-gray-700 mb-2">
+                        Phone Number <span className="text-red-500">*</span>
+                    </label>
                     <input
-                        type="email"
-                        name="email"
+                        id="phone"
+                        type="tel"
+                        name="phone"
+                        placeholder="Enter phone number (e.g., +1 234 567 8900)"
                         required
-                        placeholder="Email address"
-                        value={formData.email}
+                        value={formData.phone || ""}
                         onChange={onChange}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
                     />
                 </div>
-            </div>
 
-            <div className="grid grid-cols-2 gap-4 mb-6">
-                <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Date of birth</label>
+                <div className="md:col-span-2">
+                    <label htmlFor="address" className="block text-sm font-semibold text-gray-700 mb-2">
+                        Address
+                    </label>
                     <input
-                        type="date"
-                        name="dateOfBirth"
-                        placeholder="Select date"
-                        value={formData.dateOfBirth}
-                        onChange={onChange}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
-                    />
-                </div>
-                <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Address</label>
-                    <input
+                        id="address"
                         type="text"
                         name="address"
-                        placeholder="Address line"
-                        value={formData.address}
+                        placeholder="Enter full address"
+                        value={formData.address || ""}
                         onChange={onChange}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
                     />
                 </div>
-                <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Assign to Loc/Site<span className="text-red-500">*</span>
-                    </label>
-                    <select
-                        name="assignToLocSite"
-                        value={formData.assignToLocSite}
-                        onChange={onChange}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
-                    >
-                        <option value="">Select Loc/Site</option>
-                        {sites.map((site, idx) => (
-                            <option
-                                key={site?.id ?? site?.siteId ?? idx}
-                                value={site?.id ?? site?.siteId ?? `location${idx + 1}`}
-                            >
-                                {site?.siteName ?? `Site ${idx + 1}`}
-                            </option>
-                        ))}
-                    </select>
-                </div>
-                <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">ZIP code</label>
-                    <input
-                        type="text"
-                        name="zipCode"
-                        placeholder="Add ZIP code"
-                        value={formData.zipCode}
-                        onChange={onChange}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
-                    />
-                </div>
-                <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">State</label>
-                    <select
-                        name="state"
-                        value={formData.state}
-                        onChange={onChange}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
-                    >
-                        <option value="">Select state</option>
-                        {stateOptions.map((st) => (
-                            <option key={st} value={st}>{st}</option>
-                        ))}
-                    </select>
-                </div>
-                <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">City</label>
-                    <select
-                        name="city"
-                        value={formData.city}
-                        onChange={onChange}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
-                    >
-                        <option value="">Select city</option>
-                        {cityOptions.map((city) => (
-                            <option key={city} value={city}>{city}</option>
-                        ))}
-                    </select>
-                </div>
-                {/* <div className="col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Loyalty points amount</label>
-                    <input
-                        type="text"
-                        name="loyaltyPoints"
-                        placeholder="Loyalty points"
-                        value={formData.loyaltyPoints}
-                        onChange={onChange}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
-                    />
-                </div> */}
             </div>
 
-            {/* <div className="space-y-4">
-                <div className="flex items-center justify-between py-2">
-                    <label className="text-sm font-medium text-gray-700">Allow invoicing</label>
-                    <button
-                        type="button"
-                        onClick={() => onToggle("allowInvoicing")}
-                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${formData.allowInvoicing ? "bg-blue-500" : "bg-gray-300"
-                            }`}
-                    >
-                        <span
-                            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${formData.allowInvoicing ? "translate-x-6" : "translate-x-1"
-                                }`}
-                        />
-                    </button>
+            {/* Location Selection */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                {/* Site Selection */}
+                <div className="space-y-4">
+                    <label className="block text-sm font-semibold text-gray-700">
+                        Select Site <span className="text-red-500">*</span>
+                    </label>
+                    <fieldset className="space-y-3 max-h-60 overflow-y-auto p-2 border border-gray-200 rounded-lg bg-gray-50">
+                        {sites.length > 0 ? (
+                            sites.map((site, idx) => {
+                                const siteValue = site?.id ?? site?.siteId;
+                                return (
+                                    <label key={siteValue || idx} className="flex items-center p-2 hover:bg-white rounded cursor-pointer transition-colors">
+                                        <input
+                                            type="radio"
+                                            name="assignToLocSite"
+                                            value={siteValue}
+                                            checked={String(selectedSiteId || formData.assignToLocSite) === String(siteValue)}
+                                            onChange={handleSiteChange}
+                                            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                                        />
+                                        <span className="ml-3 text-sm font-medium text-gray-900">{site?.siteName ?? `Site ${idx + 1}`}</span>
+                                    </label>
+                                );
+                            })
+                        ) : (
+                            <p className="text-sm text-gray-500 italic p-2">No sites available.</p>
+                        )}
+                    </fieldset>
                 </div>
-                <div className="flex items-center justify-between py-2">
-                    <label className="text-sm font-medium text-gray-700">Send text</label>
-                    <button
-                        type="button"
-                        onClick={() => onToggle("sendText")}
-                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${formData.sendText ? "bg-blue-500" : "bg-gray-300"
-                            }`}
-                    >
-                        <span
-                            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${formData.sendText ? "translate-x-6" : "translate-x-1"
-                                }`}
-                        />
-                    </button>
+
+                {/* State Selection */}
+                <div className="space-y-4">
+                    <label className="block text-sm font-semibold text-gray-700">
+                        State
+                    </label>
+                    <fieldset className="space-y-3 max-h-60 overflow-y-auto p-2 border border-gray-200 rounded-lg bg-gray-50">
+                        {stateOptions.length > 0 ? (
+                            stateOptions.map((st, idx) => (
+                                <label key={idx} className="flex items-center p-2 hover:bg-white rounded cursor-pointer transition-colors">
+                                    <input
+                                        type="radio"
+                                        name="state"
+                                        value={st}
+                                        checked={formData.state === st}
+                                        onChange={onChange}
+                                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                                    />
+                                    <span className="ml-3 text-sm font-medium text-gray-900">{st}</span>
+                                </label>
+                            ))
+                        ) : (
+                            <p className="text-sm text-gray-500 italic p-2">No states available.</p>
+                        )}
+                    </fieldset>
                 </div>
-                <div className="flex items-center justify-between py-2">
-                    <label className="text-sm font-medium text-gray-700">Send email</label>
-                    <button
-                        type="button"
-                        onClick={() => onToggle("sendEmail")}
-                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${formData.sendEmail ? "bg-blue-500" : "bg-gray-300"
-                            }`}
-                    >
-                        <span
-                            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${formData.sendEmail ? "translate-x-6" : "translate-x-1"
-                                }`}
-                        />
-                    </button>
+
+                {/* City Selection */}
+                <div className="space-y-4">
+                    <label className="block text-sm font-semibold text-gray-700">
+                        City
+                    </label>
+                    <fieldset className="space-y-3 max-h-60 overflow-y-auto p-2 border border-gray-200 rounded-lg bg-gray-50">
+                        {cityOptions.length > 0 ? (
+                            cityOptions.map((city, idx) => (
+                                <label key={idx} className="flex items-center p-2 hover:bg-white rounded cursor-pointer transition-colors">
+                                    <input
+                                        type="radio"
+                                        name="city"
+                                        value={city}
+                                        checked={formData.city === city}
+                                        onChange={onChange}
+                                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                                    />
+                                    <span className="ml-3 text-sm font-medium text-gray-900">{city}</span>
+                                </label>
+                            ))
+                        ) : (
+                            <p className="text-sm text-gray-500 italic p-2">Select a site to view cities.</p>
+                        )}
+                    </fieldset>
                 </div>
-                <div className="flex items-center justify-between py-2 border-t border-gray-200 pt-4">
-                    <label className="text-sm font-medium text-gray-700">TCPA enabled</label>
-                    <span className="text-sm text-gray-600">No</span>
-                </div>
-                <div className="flex items-center justify-between py-2">
-                    <label className="text-sm font-medium text-gray-700">Blacklisted customer</label>
-                    <button
-                        type="button"
-                        onClick={() => onToggle("blacklistedCustomer")}
-                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${formData.blacklistedCustomer ? "bg-blue-500" : "bg-gray-300"
-                            }`}
-                    >
-                        <span
-                            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${formData.blacklistedCustomer ? "translate-x-6" : "translate-x-1"
-                                }`}
-                        />
-                    </button>
-                </div>
-                <div className="flex items-center justify-between py-2">
-                    <label className="text-sm font-medium text-gray-700">Active customer</label>
-                    <button
-                        type="button"
-                        onClick={() => onToggle("activeCustomer")}
-                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${formData.activeCustomer ? "bg-blue-500" : "bg-gray-300"
-                            }`}
-                    >
-                        <span
-                            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${formData.activeCustomer ? "translate-x-6" : "translate-x-1"
-                                }`}
-                        />
-                    </button>
-                </div>
-            </div> */}
+            </div>
         </div>
-    )
+    );
 }
