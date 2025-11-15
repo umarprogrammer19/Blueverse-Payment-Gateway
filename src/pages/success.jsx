@@ -57,7 +57,7 @@ export default function PaymentSuccess() {
                         address: info.address,
                         stateId: 54,
                         cityId: 0,
-                        Status: "Paid",
+                        status: "paid",
                         zipCode: info.zipCode,
                         emailId: info.email,
                         phone: info.phone,
@@ -90,7 +90,7 @@ export default function PaymentSuccess() {
                 const invoicePayload = {
                     source: "Web",
                     paymentRequest: {
-                        Key: key,
+                        key,
                         siteId,
                         token,
                         amount: pkg.price,
@@ -100,7 +100,7 @@ export default function PaymentSuccess() {
                         zipCode: info.zipCode || "00000",
                     },
                     invoiceRequest: {
-                        Key: key,
+                        key,
                         source: "Web",
                         invoiceNumber: `INV-${Date.now()}`,
                         siteId,
@@ -110,7 +110,7 @@ export default function PaymentSuccess() {
                         redemptions: 0,
                         discounts: 0,
                         tax: 0,
-                        Status: "Paid",
+                        status: "paid",
                         source: "Web",
                         siteLaneId: 1,
                         isGateEnabled: false,
