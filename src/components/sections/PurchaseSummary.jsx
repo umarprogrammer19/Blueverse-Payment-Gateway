@@ -23,8 +23,9 @@ export default function PurchaseSummary({
     defaultCurrency = "784",
     defaultPaymentMethod = "",
     defaultCheckoutOption = "combinedpage",
-    responseFailURL = "https://blueverse-checkout.netlify.app/failure",
-    responseSuccessURL = "https://blueverse-checkout.netlify.app/success",
+    responseFailURL = "https://blueverse-checkout.netlify.app/.netlify/functions/ipg-fail",
+    responseSuccessURL = "https://blueverse-checkout.netlify.app/.netlify/functions/ipg-success",
+
     transactionNotificationURL = "",
     expirationDate = null,
     isUsed = false,
