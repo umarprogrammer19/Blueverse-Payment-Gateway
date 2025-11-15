@@ -1,6 +1,5 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
-import ProductSelect from "../components/sections/ProductSelect";
 import PurchaseSummary from "../components/sections/PurchaseSummary";
 
 // 🔹 helper: name → slug
@@ -219,10 +218,8 @@ export default function Membership() {
     };
 
     return (
-        <div className="container mx-auto py-14 max-w-2xl">
-            <ProductSelect value={product} onChange={setProduct} />
-
-            <h2 className="mt-8 mb-4 text-xl font-semibold">Membership</h2>
+        <div className="container mx-auto max-w-2xl">
+            <h2 className="mt-8 mb-4 text-xl font-semibold">Service</h2>
 
             {loading ? (
                 <p>Loading...</p>
