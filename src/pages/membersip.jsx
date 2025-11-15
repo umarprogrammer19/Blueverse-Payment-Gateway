@@ -206,13 +206,13 @@ export default function Membership({ onEnsureCustomer, isProcessing = false }) {
         }
     };
 
-    // checkout handler – ab sirf parent se data save karwata hai
+    // checkout handler – parent pe user info/localStorage ka kaam
     const handleCheckout = async () => {
         if (!selectedItem) return false;
 
         if (typeof onEnsureCustomer === "function") {
             const ok = await onEnsureCustomer();
-            if (!ok) return false; // validation fail ho gayi
+            if (!ok) return false;
         }
 
         console.log("CHECKOUT with:", {
@@ -221,7 +221,7 @@ export default function Membership({ onEnsureCustomer, isProcessing = false }) {
             totals: { subtotal, discounts, tax, total },
         });
 
-        return true; // PurchaseSummary ko allow karo IPG submit karne ka
+        return true;
     };
 
     return (

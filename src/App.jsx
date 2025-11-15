@@ -39,7 +39,7 @@ function App() {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
 
-    // site choose karte hi siteId localStorage me daal do (coupon waghera ke liye)
+    // (for future) agar kabhi UI se site change karein
     if (name === "assignToLocSite" && value) {
       setSiteId(value);
       localStorage.setItem("siteId", String(value));
@@ -50,16 +50,17 @@ function App() {
     setFormData((prev) => ({ ...prev, [name]: !prev[name] }));
   };
 
+  // ab sirf basic required user fields check kar rahe hain
   const canProceed = useMemo(() => {
     return (
       formData.firstName.trim() &&
       formData.lastName.trim() &&
       formData.email.trim() &&
-      formData.assignToLocSite
+      formData.phone.trim()
     );
   }, [formData]);
 
-  // login + sites
+  // login + sites fetch
   useEffect(() => {
     (async () => {
       try {
@@ -109,14 +110,41 @@ function App() {
         const sitesData = await sitesRes.json();
         setSiteData(sitesData);
 
+        // ⭐ yahan default site/state/city set kar rahe hain
+        const sitesArray = Array.isArray(sitesData?.data)
+          ? sitesData.data
+          : [];
+
+        if (sitesArray.length > 0) {
+          // 1 -> Al Quoz, agar na mila to 0th
+          const defaultSite = sitesArray[1] || sitesArray[0];
+          const siteValue = defaultSite?.id ?? defaultSite?.siteId;
+
+          if (siteValue) {
+            // message ke mutabiq: city = Dubai, state = Al Quoz
+            const defaultState = "Al Quoz";
+            const defaultCity = "Dubai";
+
+            setFormData((prev) => ({
+              ...prev,
+              assignToLocSite: String(siteValue),
+              state: defaultState,
+              city: defaultCity,
+            }));
+
+            setSiteId(String(siteValue));
+            localStorage.setItem("siteId", String(siteValue));
+          }
+        }
+
         scheduleTokenRefresh();
       } catch (e) {
         console.error(e);
       }
     })();
-  }, [setApiKey]);
+  }, [setApiKey, setSiteId]);
 
-  // ✅ Ab yeh sirf data validate + localStorage me save karega
+  // ye function CHECKOUT se pehle call hota hai
   const ensureCustomerAndSite = async () => {
     if (!canProceed) {
       setError("Please fill in all required fields.");
@@ -132,17 +160,16 @@ function App() {
         createdAt: new Date().toISOString(),
       };
 
-      // personal info ko localStorage me dump karo
+      // personal info ko hold karne ke liye
       localStorage.setItem("checkoutCustomerInfo", JSON.stringify(payload));
 
-      // siteId context + localStorage
+      // siteId already set ho chuka hoga effect me, phir bhi safety:
       if (formData.assignToLocSite) {
         setSiteId(formData.assignToLocSite);
         localStorage.setItem("siteId", String(formData.assignToLocSite));
       }
 
-      // hum yahan customer create / check NHI kar rahe
-      // woh success page pe hoga
+      // customer create / check success page par hoga
       return true;
     } catch (err) {
       console.error("Error preparing checkout data:", err);
