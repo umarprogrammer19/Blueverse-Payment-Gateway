@@ -105,7 +105,6 @@ export default function PurchaseSummary({
             try {
                 onCheckout();
             } catch {
-                // ignore
             }
         }
         submitToIPG();
