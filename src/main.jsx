@@ -7,6 +7,7 @@ import Washbook from './pages/washbook.jsx';
 import Payment from './pages/payment.jsx';
 import { CheckoutProvider } from './context/CheckoutContext.jsx';
 import Membership from './pages/membersip.jsx';
+import PaymentSuccess from './pages/success.jsx';
 
 const router = createBrowserRouter([
   {
@@ -28,6 +29,10 @@ const router = createBrowserRouter([
       {
         path: "/payment",
         element: <Payment />,
+      },
+      {
+        path: "/success",
+        element: <PaymentSuccess />,
       },
     ],
   },
