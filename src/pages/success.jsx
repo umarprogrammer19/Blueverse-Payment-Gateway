@@ -139,7 +139,7 @@ export default function PaymentSuccess() {
 
                 const invoicePayload = {
                     washbookId: pkg.id,
-                    washbookNumber: "ONLINE",
+                    washbookNumber: Math.floor(100000 + Math.random() * 900000),
                     numberOfWashes: 2,
                     customerId,
                     siteId,
