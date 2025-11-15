@@ -37,7 +37,7 @@ export default function PaymentFailure() {
                             d="M15 19l-7-7 7-7"
                         />
                     </svg>
-                    Try Again
+                    Go Back 
                 </button>
             </div>
         </div>
