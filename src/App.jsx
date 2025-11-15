@@ -38,6 +38,12 @@ function App() {
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+
+    // site choose karte hi siteId localStorage me daal do (coupon waghera ke liye)
+    if (name === "assignToLocSite" && value) {
+      setSiteId(value);
+      localStorage.setItem("siteId", String(value));
+    }
   };
 
   const handleToggle = (name) => {
@@ -53,6 +59,7 @@ function App() {
     );
   }, [formData]);
 
+  // login + sites
   useEffect(() => {
     (async () => {
       try {
@@ -109,7 +116,7 @@ function App() {
     })();
   }, [setApiKey]);
 
-  // 🔹 ye function CHECKOUT se pehle call hoga
+  // ✅ Ab yeh sirf data validate + localStorage me save karega
   const ensureCustomerAndSite = async () => {
     if (!canProceed) {
       setError("Please fill in all required fields.");
@@ -117,95 +124,28 @@ function App() {
     }
 
     try {
-      setError("");
       setLoading(true);
+      setError("");
 
-      const base = import.meta.env.VITE_API_BASE_URL;
-      const token = localStorage.getItem("accessToken");
-      const key = apiKey || localStorage.getItem("apiKey") || "";
+      const payload = {
+        ...formData,
+        createdAt: new Date().toISOString(),
+      };
 
-      // GET customers
-      const listRes = await fetch(`${base}/api/customer?key=${key}`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      const listData = await listRes.json();
-      const customers = Array.isArray(listData?.data) ? listData.data : [];
-      const email = formData.email.trim().toLowerCase();
-      const existing = customers.find((c) => c.emailId == email);
+      // personal info ko localStorage me dump karo
+      localStorage.setItem("checkoutCustomerInfo", JSON.stringify(payload));
 
-      if (existing) {
-        localStorage.setItem("customerId", String(existing.customerId));
-        setCustomerId(existing.customerId);
+      // siteId context + localStorage
+      if (formData.assignToLocSite) {
+        setSiteId(formData.assignToLocSite);
+        localStorage.setItem("siteId", String(formData.assignToLocSite));
       }
 
-      if (!existing) {
-        const body = {
-          key,
-          address: formData.address || "",
-          allowInvoicing: !!formData.allowInvoicing,
-          blackList: !!formData.blacklistedCustomer,
-          ccNumber: "",
-          ccToken: "",
-          ccType: "",
-          cityId: 0,
-          dateOfBirth: formData.dateOfBirth
-            ? `${formData.dateOfBirth}T00:00:00`
-            : null,
-          emailId: formData.email || "",
-          expiryMonth: "",
-          expiryYear: "",
-          firstName: formData.firstName || "",
-          isActive: true,
-          isCardOnFile: false,
-          isSendEmail: !!formData.sendEmail,
-          isSendText: !!formData.sendText,
-          isTcpaEnabled: false,
-          lastName: formData.lastName,
-          loyaltyPoints: Number(formData.loyaltyPoints || 0),
-          nameOnCard: "",
-          phone: formData.phone || "",
-          recurringData: "",
-          siteId: String(formData.assignToLocSite),
-          stateId: 54,
-          zipCode: formData.zipCode || "",
-        };
-
-        const createRes = await fetch(`${base}/api/customer`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify(body),
-        });
-
-        const createData = await createRes.json();
-        if (!createRes.ok) {
-          console.error("Create customer failed:", createData);
-          setError("Failed to create customer.");
-          return false;
-        } else {
-          const newId = createData?.data?.customerId;
-          if (newId) {
-            setCustomerId(newId);
-            localStorage.setItem("customerId", String(newId));
-          }
-          console.log("Customer created:", createData?.data ?? createData);
-        }
-      } else {
-        console.log("Existing customer found:", existing);
-      }
-
-      setSiteId(formData.assignToLocSite);
-      localStorage.setItem("siteId", String(formData.assignToLocSite));
-
-      return true; // sab ok, payment continue kar sakta hai
+      // hum yahan customer create / check NHI kar rahe
+      // woh success page pe hoga
+      return true;
     } catch (err) {
-      console.error("Ensure customer/site error:", err);
+      console.error("Error preparing checkout data:", err);
       setError("Something went wrong. Please try again.");
       return false;
     } finally {
@@ -226,10 +166,7 @@ function App() {
           />
 
           <div className="mt-4">
-            {error && (
-              <p className="text-red-500 text-sm mb-2">{error}</p>
-            )}
-            {/* 🔻 yahan koi button nahi ab */}
+            {error && <p className="text-red-500 text-sm mb-2">{error}</p>}
           </div>
         </div>
 
@@ -247,7 +184,6 @@ function App() {
 
 export default App;
 
-// refresh helpers same as before
 async function doRefresh() {
   try {
     const base = import.meta.env.VITE_API_BASE_URL;
