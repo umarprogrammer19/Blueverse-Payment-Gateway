@@ -2,22 +2,20 @@
 import { useEffect, useMemo, useState } from "react";
 import PurchaseSummary from "../components/sections/PurchaseSummary";
 
-// 🔹 helper: name → slug
+// helper: name → slug
 const slugify = (str = "") =>
     str
         .toString()
         .trim()
         .toLowerCase()
-        .replace(/[^a-z0-9]+/g, "-") // non-alphanumeric → "-"
-        .replace(/^-+|-+$/g, "");    // leading/trailing "-" hata do
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "");
 
-// 🔹 helper: price pick kare membership/washbook dono se
+// helper: price
 const getItemPrice = (item) => {
     if (!item) return 0;
-    if (item.membershipPrice !== undefined && item.membershipPrice !== null)
-        return Number(item.membershipPrice) || 0;
-    if (item.washbookPrice !== undefined && item.washbookPrice !== null)
-        return Number(item.washbookPrice) || 0;
+    if (item.membershipPrice != null) return Number(item.membershipPrice) || 0;
+    if (item.washbookPrice != null) return Number(item.washbookPrice) || 0;
     return 0;
 };
 
@@ -44,12 +42,12 @@ export default function Membership({ onEnsureCustomer, isProcessing = false }) {
             setSlugFromHash(normalized);
         };
 
-        updateSlug(); // initial
+        updateSlug();
         window.addEventListener("hashchange", updateSlug);
         return () => window.removeEventListener("hashchange", updateSlug);
     }, []);
 
-    // 🔹 fetch washbooks + memberships
+    // fetch washbooks + memberships
     useEffect(() => {
         (async () => {
             try {
@@ -96,7 +94,6 @@ export default function Membership({ onEnsureCustomer, isProcessing = false }) {
                     };
                 });
 
-                // Console me naam + slug dekhne ke liye (links banate waqt helpful)
                 console.table(
                     withSlugs.map((i) => ({
                         name: i.membershipName || i.washbookName,
@@ -113,7 +110,7 @@ export default function Membership({ onEnsureCustomer, isProcessing = false }) {
         })();
     }, [apiKey]);
 
-    // 🔹 URL slug se selected item nikaalna
+    // selected item from hash
     const selectedItem = useMemo(() => {
         if (!items.length) return null;
 
@@ -122,20 +119,21 @@ export default function Membership({ onEnsureCustomer, isProcessing = false }) {
             if (bySlug) return bySlug;
         }
 
-        // fallback: pehla membership item (agar slug na mile)
         const firstMembership = items.find((i) =>
             /membership/i.test(i.membershipName || "")
         );
         return firstMembership || items[0] || null;
     }, [items, slugFromHash]);
 
-    // 🔹 totals (serverTotals > local calc)
+    // totals
     const fallbackSubtotal = getItemPrice(selectedItem);
     const subtotal = serverTotals?.subtotal ?? fallbackSubtotal;
     const discounts = serverTotals?.discounts ?? 0;
     const tax = serverTotals?.tax ?? 0;
-    const total = serverTotals?.totalAmount ?? Math.max(fallbackSubtotal - discounts + tax, 0);
+    const total =
+        serverTotals?.totalAmount ?? Math.max(fallbackSubtotal - discounts + tax, 0);
 
+    // coupon
     const handleApplyCoupon = async () => {
         const promo = (couponCode || "").trim().toUpperCase();
         if (!promo) return console.log("Empty code — skipping");
@@ -207,28 +205,23 @@ export default function Membership({ onEnsureCustomer, isProcessing = false }) {
             setApplying(false);
         }
     };
-    // 🔹 yahan pe actual checkout handler
+
+    // checkout handler – ab sirf parent se data save karwata hai
     const handleCheckout = async () => {
         if (!selectedItem) return false;
 
-        // pehle customer/site ensure
         if (typeof onEnsureCustomer === "function") {
             const ok = await onEnsureCustomer();
-            if (!ok) {
-                // agar validation fail ya error, payment mat karo
-                return false;
-            }
+            if (!ok) return false; // validation fail ho gayi
         }
 
-        // yahan extra info localStorage / context me store karna ho to kar sakte ho
         console.log("CHECKOUT with:", {
             category: product,
             selected: selectedItem,
             totals: { subtotal, discounts, tax, total },
         });
 
-        // true return karo taake PurchaseSummary IPG ko submit kare
-        return true;
+        return true; // PurchaseSummary ko allow karo IPG submit karne ka
     };
 
     return (
@@ -266,7 +259,7 @@ export default function Membership({ onEnsureCustomer, isProcessing = false }) {
                 couponCode={couponCode}
                 onCouponChange={(e) => setCouponCode(e.target.value)}
                 onApplyCoupon={handleApplyCoupon}
-                onCheckout={handleCheckout}      // 👈 yahan se upar wala function ja raha
+                onCheckout={handleCheckout}
                 isProcessing={isProcessing || applying}
             />
 
