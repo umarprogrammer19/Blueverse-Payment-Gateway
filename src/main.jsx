@@ -1,13 +1,12 @@
-import { createRoot } from 'react-dom/client'
-import App from './App.jsx'
-import './index.css'
-import { createBrowserRouter, RouterProvider } from 'react-router-dom'
-import Layout from './layout.jsx';
-import Washbook from './pages/washbook.jsx';
-import Payment from './pages/payment.jsx';
+import { createRoot } from 'react-dom/client';
+import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+import App from './App.jsx';
 import { CheckoutProvider } from './context/CheckoutContext.jsx';
+import './index.css';
+import Layout from './layout.jsx';
 import Membership from './pages/membersip.jsx';
 import PaymentSuccess from './pages/success.jsx';
+import Washbook from './pages/washbook.jsx';
 
 const router = createBrowserRouter([
   {
@@ -27,8 +26,8 @@ const router = createBrowserRouter([
         element: <Membership />,
       },
       {
-        path: "/payment",
-        element: <Payment />,
+        path: "/failure",
+        element: <PaymentFailure />,
       },
       {
         path: "/success",
