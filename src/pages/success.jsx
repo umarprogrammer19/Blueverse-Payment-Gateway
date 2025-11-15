@@ -66,7 +66,6 @@ export default function PaymentSuccess() {
                     }
                     setStatus("done");
                     setMessage("Customer already exists. Linked payment to your account.");
-                    // optionally: localStorage.removeItem("checkoutCustomerInfo");
                     return;
                 }
 
@@ -133,7 +132,6 @@ export default function PaymentSuccess() {
 
                 setStatus("done");
                 setMessage("Customer created successfully after payment.");
-                // optionally: localStorage.removeItem("checkoutCustomerInfo");
             } catch (err) {
                 console.error("Success page customer sync error:", err);
                 setStatus("error");
@@ -147,78 +145,71 @@ export default function PaymentSuccess() {
     }, [apiKey, setCustomerId, setSiteId]);
 
     return (
-        <>
-            <div className="min-h-screen bg-linear-to-br from-green-50 to-blue-50 flex items-center justify-center px-4 py-12">
-                <div className="max-w-md w-full bg-white rounded-xl shadow-lg p-8 text-center">
-                    {/* Success Icon */}
-                    <div className="mx-auto w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mb-6">
-                        <CheckCircleIcon className="w-16 h-16 text-green-600" />
-                    </div>
+        <div className="min-h-screen bg-linear-to-br from-green-50 to-blue-50 flex items-center justify-center px-4 py-12">
+            <div className="max-w-md w-full bg-white rounded-xl shadow-lg p-8 text-center">
+                <div className="mx-auto w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mb-6">
+                    <CheckCircleIcon className="w-16 h-16 text-green-600" />
+                </div>
 
-                    {/* Title */}
-                    <h1 className="text-3xl font-bold text-gray-900 mb-2">Payment Successful!</h1>
+                <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                    Payment Successful!
+                </h1>
 
-                    {/* Message */}
-                    <p className="text-gray-600 mb-8">
-                        Thank you for your purchase. Your transaction has been processed successfully.
-                    </p>
+                <p className="text-gray-600 mb-8">
+                    Thank you for your purchase. Your transaction has been processed
+                    successfully.
+                </p>
 
-                    {/* Back Button */}
-                    <button
-                        onClick={() => window.location.href = "https://wheat-ferret-827560.hostingersite.com/"}
-                        className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2"
+                <button
+                    onClick={() =>
+                    (window.location.href =
+                        "https://wheat-ferret-827560.hostingersite.com/")
+                    }
+                    className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2"
+                >
+                    <svg
+                        className="w-5 h-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
                     >
-                        <svg
-                            className="w-5 h-5"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                        >
-                            <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M15 19l-7-7 7-7"
-                            />
-                        </svg>
-                        Go Back
-                    </button>
-                    <div className="mt-4">
-                        {
-                            status === "processing" && (
-                                <p className="text-gray-600">
-                                    Finalizing your account. Please wait a moment...
-                                </p>
-                            )
-                        }
+                        <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M15 19l-7-7 7-7"
+                        />
+                    </svg>
+                    Go Back
+                </button>
 
-                        {
-                            status === "done" && (
-                                <p className="text-green-700">
-                                    {message || "Your payment has been processed successfully."}
-                                </p>
-                            )
-                        }
+                <div className="mt-4">
+                    {status === "processing" && (
+                        <p className="text-gray-600">
+                            Finalizing your account. Please wait a moment...
+                        </p>
+                    )}
 
-                        {
-                            status === "no-data" && (
-                                <p className="text-gray-600">
-                                    Payment completed, but no stored customer information was found.
-                                </p>
-                            )
-                        }
+                    {status === "done" && (
+                        <p className="text-green-700">
+                            {message || "Your payment has been processed successfully."}
+                        </p>
+                    )}
 
-                        {
-                            status === "error" && (
-                                <p className="text-red-600">
-                                    {message ||
-                                        "Payment succeeded, but something went wrong while saving your details."}
-                                </p>
-                            )
-                        }
-                    </div>
+                    {status === "no-data" && (
+                        <p className="text-gray-600">
+                            Payment completed, but no stored customer information was found.
+                        </p>
+                    )}
+
+                    {status === "error" && (
+                        <p className="text-red-600">
+                            {message ||
+                                "Payment succeeded, but something went wrong while saving your details."}
+                        </p>
+                    )}
                 </div>
             </div>
-        </>
+        </div>
     );
 }

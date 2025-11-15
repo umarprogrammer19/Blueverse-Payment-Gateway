@@ -1,7 +1,6 @@
 "use client";
 
 import CryptoJS from "crypto-js";
-import { Check } from "lucide-react";
 import moment from "moment-timezone";
 import { useMemo, useState } from "react";
 
@@ -38,6 +37,7 @@ export default function PurchaseSummary({
     const [oid, setOid] = useState("");
 
     const [couponError, setCouponError] = useState("");
+    const [termsAccepted, setTermsAccepted] = useState(false); // ✅ NEW
 
     const txndatetime = useMemo(() => {
         return moment().tz(timezone).format("YYYY:MM:DD-HH:mm:ss");
@@ -102,6 +102,9 @@ export default function PurchaseSummary({
     }
 
     const handleCheckout = async () => {
+        // ✅ hard guard
+        if (!termsAccepted) return;
+
         if (typeof onCheckout === "function") {
             try {
                 const result = await onCheckout();
@@ -233,11 +236,15 @@ export default function PurchaseSummary({
                     د.إ{Number(total).toFixed(2)}
                 </span>
             </div>
+
+            {/* ✅ Terms of service must be accepted */}
             <div className="flex items-center gap-2">
                 <input
                     type="checkbox"
                     id="terms"
                     required
+                    checked={termsAccepted}
+                    onChange={(e) => setTermsAccepted(e.target.checked)}
                     className="w-4 h-4 border border-gray-300 rounded cursor-pointer"
                 />
                 <label htmlFor="terms" className="text-sm text-gray-600">
@@ -247,16 +254,15 @@ export default function PurchaseSummary({
                     </a>
                 </label>
             </div>
+
             {/* Checkout */}
             <button
                 onClick={handleCheckout}
-                disabled={!selectedPackage || isProcessing}
+                disabled={!selectedPackage || isProcessing || !termsAccepted}
                 className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white font-bold py-3 px-4 rounded-lg transition-colors"
             >
                 {isProcessing ? "Processing..." : "CHECKOUT"}
             </button>
-
-
         </div>
     );
 }
