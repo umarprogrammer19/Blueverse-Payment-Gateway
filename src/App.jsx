@@ -2,12 +2,16 @@ import { useEffect, useMemo, useState } from "react";
 import { setTokens } from "./auth";
 import PersonalInfo from "./components/sections/PersonalInfo";
 import { useCheckout } from "./context/CheckoutContext";
+import Membership from "./pages/membersip";
 
 function App() {
   const [siteData, setSiteData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const { setApiKey, setSiteId, setCustomerId, apiKey } = useCheckout();
+
+  // 🔹 controls showing membership panel on the right
+  const [showMembership, setShowMembership] = useState(false);
 
   const [formData, setFormData] = useState({
     firstName: "",
@@ -38,11 +42,11 @@ function App() {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
+
   const handleToggle = (name) => {
     setFormData((prev) => ({ ...prev, [name]: !prev[name] }));
   };
 
-  // Required fields to enable/show Next
   const canProceed = useMemo(() => {
     return (
       formData.firstName.trim() &&
@@ -55,32 +59,48 @@ function App() {
   useEffect(() => {
     (async () => {
       try {
-        const authRes = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/External/AuthenticateUser`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            emailOrPhone: import.meta.env.VITE_UEMAIL,
-            password: import.meta.env.VITE_UPASSWORD,
-          }),
-        });
-        if (!authRes.ok) return console.error("Auth failed:", authRes.status);
+        const authRes = await fetch(
+          `${import.meta.env.VITE_API_BASE_URL}/api/External/AuthenticateUser`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              emailOrPhone: import.meta.env.VITE_UEMAIL,
+              password: import.meta.env.VITE_UPASSWORD,
+            }),
+          }
+        );
+        if (!authRes.ok) {
+          console.error("Auth failed:", authRes.status);
+          return;
+        }
 
         const authData = await authRes.json();
         const accessToken = authData?.data?.accessToken;
         const refreshToken = authData?.data?.refreshToken;
         const keyFromLogin = authData?.data?.key;
 
-        if (!accessToken || !refreshToken) return console.warn("Missing tokens");
+        if (!accessToken || !refreshToken) {
+          console.warn("Missing tokens");
+          return;
+        }
+
         setTokens({ accessToken, refreshToken });
+
         if (keyFromLogin) {
           setApiKey(keyFromLogin);
           localStorage.setItem("apiKey", keyFromLogin);
         }
 
-        // Sites
         const sitesRes = await fetch(
           `${import.meta.env.VITE_API_BASE_URL}/api/external/sites?key=${keyFromLogin}`,
-          { method: "GET", headers: { "Content-Type": "application/json", Authorization: `Bearer ${accessToken}` } }
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${accessToken}`,
+            },
+          }
         );
         const sitesData = await sitesRes.json();
         setSiteData(sitesData);
@@ -90,12 +110,18 @@ function App() {
         console.error(e);
       }
     })();
-  }, []);
+  }, [setApiKey]);
 
   const handleProceedToCheckout = async () => {
-    if (!canProceed) return setError("Please fill in all required fields.");
+    if (!canProceed) {
+      setError("Please fill in all required fields.");
+      return;
+    }
+
     try {
+      setError("");
       setLoading(true);
+
       const base = import.meta.env.VITE_API_BASE_URL;
       const token = localStorage.getItem("accessToken");
       const key = apiKey || localStorage.getItem("apiKey") || "";
@@ -103,14 +129,20 @@ function App() {
       // GET customers
       const listRes = await fetch(`${base}/api/customer?key=${key}`, {
         method: "GET",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
       });
       const listData = await listRes.json();
       const customers = Array.isArray(listData?.data) ? listData.data : [];
       const email = formData.email.trim().toLowerCase();
       const existing = customers.find((c) => c.emailId == email);
 
-      existing && localStorage.setItem("customerId", String(existing.customerId));
+      if (existing) {
+        localStorage.setItem("customerId", String(existing.customerId));
+        setCustomerId(existing.customerId);
+      }
 
       if (!existing) {
         const body = {
@@ -122,7 +154,9 @@ function App() {
           ccToken: "",
           ccType: "",
           cityId: 0,
-          dateOfBirth: formData.dateOfBirth ? `${formData.dateOfBirth}T00:00:00` : null,
+          dateOfBirth: formData.dateOfBirth
+            ? `${formData.dateOfBirth}T00:00:00`
+            : null,
           emailId: formData.email || "",
           expiryMonth: "",
           expiryYear: "",
@@ -144,66 +178,74 @@ function App() {
 
         const createRes = await fetch(`${base}/api/customer`, {
           method: "POST",
-          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
           body: JSON.stringify(body),
         });
+
         const createData = await createRes.json();
-        if (!createRes.ok) return console.error("Create customer failed:", createData);
-        const newId = createData?.data?.customerId;
-        if (newId) {
-          setCustomerId(newId);
-          localStorage.setItem("customerId", String(newId));
+        if (!createRes.ok) {
+          console.error("Create customer failed:", createData);
+        } else {
+          const newId = createData?.data?.customerId;
+          if (newId) {
+            setCustomerId(newId);
+            localStorage.setItem("customerId", String(newId));
+          }
+          console.log("Customer created:", createData?.data ?? createData);
         }
-        console.log("Customer created:", createData?.data ?? createData);
       } else {
         console.log("Existing customer found:", existing);
       }
+
       setSiteId(formData.assignToLocSite);
       localStorage.setItem("siteId", String(formData.assignToLocSite));
-      if (window.location.hash && window.location.hash !== "#membership" && window.location.href !== "/membership")
-        window.location.href = `/wash${window.location.hash}`;
-      else
-        window.location.href = `/membership`;
 
+      // 👉 instead of redirect, show Membership panel on the right
+      setShowMembership(true);
     } catch (err) {
       console.error("Proceed/Customer flow error:", err);
+      setError("Something went wrong. Please try again.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <main className="mx-auto px-12 py-8">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <div className="lg:col-span-2">
-          <div className="space-y-8">
-            <section className="bg-white rounded-lg p-6">
+    <main className="mx-auto max-w-6xl px-8 py-10">
+      {/* 2 columns: left = personal info, right = membership */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+        {/* LEFT: Personal info */}
+        <div>
+          <PersonalInfo
+            siteData={siteData}
+            formData={formData}
+            onChange={handleInputChange}
+            onToggle={handleToggle}
+          />
 
+          <div className="mt-4">
+            {error && (
+              <p className="text-red-500 text-sm mb-2">{error}</p>
+            )}
 
-              <PersonalInfo
-                siteData={siteData}
-                formData={formData}
-                onChange={handleInputChange}
-                onToggle={handleToggle}
-              />
-              <div className="mt-6 relative right-10 max-w-3xl flex justify-start mx-auto">
-                {error && <p className="text-red-500 text-md mt-2">{error}</p>}
-              </div>
-
-              {/* Next button only when required fields ready */}
-              <div className="mt-6 max-w-3xl flex justify-start mx-auto">
-                <button
-                  type="button"
-                  onClick={handleProceedToCheckout}
-                  disabled={loading}
-                  className="px-7 relative right-10 py-2 text-lg rounded-lg bg-blue-600 text-white disabled:opacity-60"
-                >
-                  {loading ? "Please wait..." : "Next"}
-                </button>
-              </div>
-            </section>
+            <button
+              type="button"
+              onClick={handleProceedToCheckout}
+              disabled={loading}
+              className="px-7 py-2 text-lg rounded-lg bg-blue-600 text-white disabled:opacity-60"
+            >
+              {loading ? "Please wait..." : "Next"}
+            </button>
           </div>
         </div>
+
+        {/* RIGHT: Membership / products */}
+        <section className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 min-h-[420px]">
+          <Membership />
+        </section>
       </div>
     </main>
   );
@@ -211,7 +253,6 @@ function App() {
 
 export default App;
 
-// refresh helpers (same as before)
 async function doRefresh() {
   try {
     const base = import.meta.env.VITE_API_BASE_URL;
@@ -223,7 +264,11 @@ async function doRefresh() {
     const res = await fetch(`${base}/api/External/RefreshUserAccessToken`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ key, refreshToken: currentRefresh, token: currentAccess }),
+      body: JSON.stringify({
+        key,
+        refreshToken: currentRefresh,
+        token: currentAccess,
+      }),
     });
 
     const data = await res.json();
