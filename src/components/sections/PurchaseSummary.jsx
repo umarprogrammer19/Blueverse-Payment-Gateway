@@ -24,7 +24,7 @@ export default function PurchaseSummary({
     defaultPaymentMethod = "",
     defaultCheckoutOption = "combinedpage",
     responseFailURL = "https://fiservsimulator.somee.com/IPGDemo/FailureResponse",
-    responseSuccessURL = "https://fiservsimulator.somee.com/IPGDemo/SuccessResponse",
+    responseSuccessURL = "/success",
     transactionNotificationURL = "",
     expirationDate = null,
     isUsed = false,
