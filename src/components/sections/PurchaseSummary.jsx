@@ -23,11 +23,12 @@ export default function PurchaseSummary({
     defaultCurrency = "784",
     defaultPaymentMethod = "",
     defaultCheckoutOption = "combinedpage",
-    responseFailURL = "https://fiservsimulator.somee.com/IPGDemo/FailureResponse",
-    responseSuccessURL = "/success",
+    responseFailURL = "https://blueverse-checkout.netlify.app/failure",
+    responseSuccessURL = "https://blueverse-checkout.netlify.app/success",
     transactionNotificationURL = "",
     expirationDate = null,
     isUsed = false,
+    isProcessing = false,      // 👈 NEW
 }) {
     // UI state mirroring your HTML form
     const [timezone, setTimezone] = useState("Asia/Dubai");
@@ -100,11 +101,14 @@ export default function PurchaseSummary({
         form.submit();
     }
 
-    const handleCheckout = () => {
+    const handleCheckout = async () => {
         if (typeof onCheckout === "function") {
             try {
-                onCheckout();
-            } catch {
+                const result = await onCheckout();
+                if (result === false) return;
+            } catch (err) {
+                console.error("onCheckout error:", err);
+                return;
             }
         }
         submitToIPG();
@@ -234,10 +238,10 @@ export default function PurchaseSummary({
             {/* Checkout */}
             <button
                 onClick={handleCheckout}
-                disabled={!selectedPackage}
+                disabled={!selectedPackage || isProcessing}
                 className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white font-bold py-3 px-4 rounded-lg transition-colors"
             >
-                CHECKOUT
+                {isProcessing ? "Processing..." : "CHECKOUT"}
             </button>
 
             {/* Terms + Security */}
