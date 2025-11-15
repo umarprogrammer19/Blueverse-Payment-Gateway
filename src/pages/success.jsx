@@ -2,10 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { useCheckout } from "../context/CheckoutContext";
+import { CheckCircleIcon } from "lucide-react";
 
 export default function PaymentSuccess() {
     const { setCustomerId, setSiteId, apiKey } = useCheckout();
-    const [status, setStatus] = useState("processing"); 
+    const [status, setStatus] = useState("processing");
     const [message, setMessage] = useState("");
 
     useEffect(() => {
@@ -182,39 +183,40 @@ export default function PaymentSuccess() {
                         </svg>
                         Go Back
                     </button>
+                    <div className="mt-4">
+                        {
+                            status === "processing" && (
+                                <p className="text-gray-600">
+                                    Finalizing your account. Please wait a moment...
+                                </p>
+                            )
+                        }
 
-                    {
-                        status === "processing" && (
-                            <p className="text-gray-600">
-                                Finalizing your account. Please wait a moment...
-                            </p>
-                        )
-                    }
+                        {
+                            status === "done" && (
+                                <p className="text-green-700">
+                                    {message || "Your payment has been processed successfully."}
+                                </p>
+                            )
+                        }
 
-                    {
-                        status === "done" && (
-                            <p className="text-green-700">
-                                {message || "Your payment has been processed successfully."}
-                            </p>
-                        )
-                    }
+                        {
+                            status === "no-data" && (
+                                <p className="text-gray-600">
+                                    Payment completed, but no stored customer information was found.
+                                </p>
+                            )
+                        }
 
-                    {
-                        status === "no-data" && (
-                            <p className="text-gray-600">
-                                Payment completed, but no stored customer information was found.
-                            </p>
-                        )
-                    }
-
-                    {
-                        status === "error" && (
-                            <p className="text-red-600">
-                                {message ||
-                                    "Payment succeeded, but something went wrong while saving your details."}
-                            </p>
-                        )
-                    }
+                        {
+                            status === "error" && (
+                                <p className="text-red-600">
+                                    {message ||
+                                        "Payment succeeded, but something went wrong while saving your details."}
+                                </p>
+                            )
+                        }
+                    </div>
                 </div>
             </div>
         </>
