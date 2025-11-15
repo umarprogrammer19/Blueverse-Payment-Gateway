@@ -13,6 +13,7 @@ export default function PaymentSuccess() {
             try {
                 const info = JSON.parse(localStorage.getItem("checkoutCustomerInfo") || "{}");
                 const pkg = JSON.parse(localStorage.getItem("selectedPackageInfo") || "{}");
+                const siteId = localStorage.getItem("siteId");
                 console.log(pkg, info);
 
                 if (!info.email) {
@@ -20,9 +21,11 @@ export default function PaymentSuccess() {
                     setMessage("No saved customer details found.");
                     return;
                 }
-
+                
                 const base = import.meta.env.VITE_API_BASE_URL;
-                const key = localStorage.getItem("key");
+                const key = localStorage.getItem("apiKey");
+                console.log(key);
+
                 const token = localStorage.getItem("accessToken");
 
                 // 1) Check if customer exists
@@ -48,7 +51,7 @@ export default function PaymentSuccess() {
                     // 2) Create customer
                     const createBody = {
                         key,
-                        siteId: info.siteId,
+                        siteId,
                         firstName: info.firstName,
                         lastName: info.lastName,
                         address: info.address,
@@ -88,7 +91,7 @@ export default function PaymentSuccess() {
                     source: "Web",
                     paymentRequest: {
                         key,
-                        siteId: info.siteId,
+                        siteId,
                         token: "",
                         amount: pkg.price,
                         recurringData: "",
@@ -100,7 +103,7 @@ export default function PaymentSuccess() {
                         key,
                         source: "Web",
                         invoiceNumber: `INV-${Date.now()}`,
-                        siteId: info.siteId,
+                        siteIdsiteId,
                         status: "Paid",
                         totalAmount: pkg.price,
                         amountDue: 0,
