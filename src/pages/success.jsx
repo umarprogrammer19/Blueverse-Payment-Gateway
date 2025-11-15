@@ -87,7 +87,7 @@ export default function PaymentSuccess() {
                     paymentRequest: {
                         key,
                         siteId: info.siteId,
-                        token: "", // card token from IPG if needed
+                        token: "",
                         amount: pkg.price,
                         recurringData: "",
                         invoiceNo: `INV-${Date.now()}`,
