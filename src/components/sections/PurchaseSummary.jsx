@@ -25,13 +25,11 @@ export default function PurchaseSummary({
     defaultCheckoutOption = "combinedpage",
     responseFailURL = "https://blueverse-checkout.netlify.app/.netlify/functions/ipg-fail",
     responseSuccessURL = "https://blueverse-checkout.netlify.app/.netlify/functions/ipg-success",
-
     transactionNotificationURL = "",
     expirationDate = null,
     isUsed = false,
-    isProcessing = false,      // 👈 NEW
+    isProcessing = false,
 }) {
-    // UI state mirroring your HTML form
     const [timezone, setTimezone] = useState("Asia/Dubai");
     const [txntype, setTxntype] = useState(defaultTxnType);
     const [currency, setCurrency] = useState(defaultCurrency);
@@ -39,7 +37,6 @@ export default function PurchaseSummary({
     const [checkoutoption, setCheckoutoption] = useState(defaultCheckoutOption);
     const [oid, setOid] = useState("");
 
-    // 🔴 NEW: coupon error state
     const [couponError, setCouponError] = useState("");
 
     const txndatetime = useMemo(() => {
@@ -47,9 +44,9 @@ export default function PurchaseSummary({
     }, [timezone]);
 
     const chargeTotal = useMemo(() => {
-        const val = Number(total ?? selectedPackage?.washbookPrice ?? 0);
+        const val = Number(total ?? 0);
         return val.toFixed(2);
-    }, [total, selectedPackage]);
+    }, [total]);
 
     function createSignature(paymentParams, secret) {
         const ignore = new Set(["hashExtended"]);
@@ -57,7 +54,9 @@ export default function PurchaseSummary({
             .filter((k) => paymentParams[k] !== "" && !ignore.has(k))
             .sort();
 
-        const messageSignatureContent = sortedKeys.map((k) => String(paymentParams[k]));
+        const messageSignatureContent = sortedKeys.map((k) =>
+            String(paymentParams[k])
+        );
         const raw = messageSignatureContent.join("|");
         const hmac = CryptoJS.HmacSHA256(raw, secret);
         return CryptoJS.enc.Base64.stringify(hmac);
@@ -106,7 +105,7 @@ export default function PurchaseSummary({
         if (typeof onCheckout === "function") {
             try {
                 const result = await onCheckout();
-                if (result === false) return;
+                if (result === false) return; // validation failed upstream
             } catch (err) {
                 console.error("onCheckout error:", err);
                 return;
@@ -115,15 +114,13 @@ export default function PurchaseSummary({
         submitToIPG();
     };
 
-    // 🔴 NEW: validate coupon based on expirationDate & isUsed
+    // coupon validation
     function validateCoupon() {
-        // agar dono props hi na aaye ho to validation skip
         if (!expirationDate && !isUsed) {
             setCouponError("");
             return true;
         }
 
-        // expiration check
         if (expirationDate) {
             const now = moment();
             const exp = moment(expirationDate);
@@ -134,7 +131,6 @@ export default function PurchaseSummary({
             }
         }
 
-        // already used check
         if (isUsed) {
             setCouponError("This coupon has already been used.");
             return false;
@@ -144,7 +140,6 @@ export default function PurchaseSummary({
         return true;
     }
 
-    // 🔴 NEW: Apply button handler
     const handleApplyCouponClick = () => {
         const isValid = validateCoupon();
         if (!isValid) return;
@@ -153,6 +148,14 @@ export default function PurchaseSummary({
             onApplyCoupon();
         }
     };
+
+    const selectedName =
+        selectedPackage?.washbookName || selectedPackage?.membershipName || "";
+    const selectedPrice = selectedPackage
+        ? Number(
+            selectedPackage.washbookPrice ?? selectedPackage.membershipPrice ?? 0
+        )
+        : 0;
 
     return (
         <div className="space-y-6">
@@ -179,11 +182,8 @@ export default function PurchaseSummary({
                     </button>
                 </div>
 
-                {/* Error message if coupon invalid */}
                 {couponError && (
-                    <p className="mt-1 text-sm text-red-600">
-                        {couponError}
-                    </p>
+                    <p className="mt-1 text-sm text-red-600">{couponError}</p>
                 )}
             </div>
 
@@ -192,11 +192,9 @@ export default function PurchaseSummary({
                 <h4 className="font-semibold">Selected package</h4>
                 {selectedPackage ? (
                     <div className="flex justify-between text-sm">
-                        <span className="text-gray-700">
-                            {selectedPackage.washbookName}
-                        </span>
+                        <span className="text-gray-700">{selectedName}</span>
                         <span className="text-gray-900">
-                            ${Number(selectedPackage.washbookPrice || 0).toFixed(2)}
+                            د.إ{selectedPrice.toFixed(2)}
                         </span>
                     </div>
                 ) : (
