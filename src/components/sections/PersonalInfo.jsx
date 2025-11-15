@@ -3,6 +3,8 @@
 import { useState } from "react";
 
 export default function PersonalInfo({ formData, onChange, siteData }) {
+    const id = window.location.hash;
+    console.log(id)
     const sites = Array.isArray(siteData?.data) ? siteData.data : [];
     const [selectedSiteId, setSelectedSiteId] = useState(formData.assignToLocSite || "");
 

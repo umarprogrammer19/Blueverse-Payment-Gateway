@@ -27,7 +27,8 @@ export default function Membership() {
                 const token = localStorage.getItem("accessToken");
                 const key = apiKey || localStorage.getItem("apiKey") || "";
 
-                const url = `${base}/api/membership?key=${encodeURIComponent(key)}&ShowOnCustomerPortal=True`;
+                const url = `${base}/api/washbook?key=${encodeURIComponent(key)}`;
+                const url2 = `${base}/api/membership?key=${encodeURIComponent(key)}`;
                 const res = await fetch(url, {
                     method: "GET",
                     headers: {
@@ -35,10 +36,17 @@ export default function Membership() {
                         Authorization: `Bearer ${token}`,
                     },
                 });
+                const res2 = await fetch(url2, {
+                    method: "GET",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`,
+                    },
+                });
                 const data = await res.json();
-                console.log(data);
+                const data2 = await res2.json();
 
-                setItems(Array.isArray(data?.data) ? data.data : []);
+                setItems((Array.isArray(data?.data) && Array.isArray(data2?.data)) ? [...data.data, ...data2.data] : []);
             } catch (e) {
                 console.error("Membership fetch error:", e);
             } finally {
@@ -46,7 +54,7 @@ export default function Membership() {
             }
         })();
     }, [apiKey]);
-
+    console.log(items);
     // filter packages by category
     const filteredPackages = useMemo(() => {
         return items.filter(i => /membership/i.test(i.membershipName || ""));
