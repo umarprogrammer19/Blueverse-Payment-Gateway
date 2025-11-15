@@ -34,7 +34,16 @@ export default function Membership({ onEnsureCustomer, isProcessing = false }) {
     const siteId = localStorage.getItem("siteId") || "";
 
     const [slugFromHash, setSlugFromHash] = useState("");
-
+    useEffect(() => {
+        if (selectedItem) {
+            localStorage.setItem("selectedPackageInfo", JSON.stringify({
+                type: selectedItem.membershipId ? "membership" : "washbook",
+                id: selectedItem.membershipId || selectedItem.washbookId,
+                name: selectedItem.membershipName || selectedItem.washbookName,
+                price: selectedItem.membershipPrice || selectedItem.washbookPrice
+            }));
+        }
+    }, [selectedItem]);
     useEffect(() => {
         const updateSlug = () => {
             const hash = window.location.hash || "";

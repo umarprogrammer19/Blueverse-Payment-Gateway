@@ -10,139 +10,148 @@ export default function PaymentSuccess() {
     const [message, setMessage] = useState("");
 
     useEffect(() => {
-        const run = async () => {
+        const finalize = async () => {
             try {
-                const stored = localStorage.getItem("checkoutCustomerInfo");
-                if (!stored) {
-                    setStatus("no-data");
-                    setMessage(
-                        "Payment completed, but no stored customer information was found."
-                    );
+                const info = JSON.parse(localStorage.getItem("checkoutCustomerInfo") || "{}");
+                const pkg = JSON.parse(localStorage.getItem("selectedPackageInfo") || "{}");
+
+                if (!info.email) {
+                    setStatus("error");
+                    setMessage("No saved customer details found.");
                     return;
                 }
-
-                const info = JSON.parse(stored || "{}");
 
                 const base = import.meta.env.VITE_API_BASE_URL;
+                const key = apiKey || localStorage.getItem("apiKey");
                 const token = localStorage.getItem("accessToken");
-                const key = apiKey || localStorage.getItem("apiKey") || "";
 
-                if (!token || !key) {
-                    setStatus("error");
-                    setMessage("Missing API credentials. Please contact support.");
-                    return;
-                }
-
-                const email = (info.email || info.emailId || "").trim().toLowerCase();
-                if (!email) {
-                    setStatus("error");
-                    setMessage("Stored customer information does not include an email.");
-                    return;
-                }
-
-                // 1) check existing customers
+                // 1) Check if customer exists
                 const listRes = await fetch(`${base}/api/customer?key=${key}`, {
-                    method: "GET",
                     headers: {
                         "Content-Type": "application/json",
-                        Authorization: `Bearer ${token}`,
-                    },
+                        Authorization: `Bearer ${token}`
+                    }
                 });
-                const listData = await listRes.json();
-                const customers = Array.isArray(listData?.data) ? listData.data : [];
+
+                const json = await listRes.json();
+                const customers = Array.isArray(json.data) ? json.data : [];
+
+                let customerId = null;
+
                 const existing = customers.find(
-                    (c) => String(c.emailId || "").toLowerCase() === email
+                    c => String(c.emailId).toLowerCase() === info.email.toLowerCase()
                 );
 
                 if (existing) {
-                    const cid = existing.customerId;
-                    if (cid) {
-                        setCustomerId(cid);
-                        localStorage.setItem("customerId", String(cid));
-                    }
-                    if (info.assignToLocSite) {
-                        setSiteId(info.assignToLocSite);
-                        localStorage.setItem("siteId", String(info.assignToLocSite));
-                    }
-                    setStatus("done");
-                    setMessage("Customer already exists. Linked payment to your account.");
-                    return;
+                    customerId = existing.customerId;
+                } else {
+                    // 2) Create customer
+                    const createBody = {
+                        key,
+                        siteId: info.siteId,
+                        firstName: info.firstName,
+                        lastName: info.lastName,
+                        address: info.address,
+                        stateId: 54,
+                        cityId: 0,
+                        zipCode: info.zipCode,
+                        emailId: info.email,
+                        phone: info.phone,
+                        allowInvoicing: false,
+                        loyaltyPoints: 0,
+                        isCardOnFile: false,
+                        blackList: false,
+                        isActive: true,
+                        source: "web"
+                    };
+
+                    const createRes = await fetch(`${base}/api/customer`, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            Authorization: `Bearer ${token}`
+                        },
+                        body: JSON.stringify(createBody)
+                    });
+
+                    const cdata = await createRes.json();
+                    customerId = cdata.data;
                 }
 
-                // 2) create new customer
-                const body = {
-                    key,
-                    address: info.address || "",
-                    allowInvoicing: !!info.allowInvoicing,
-                    blackList: !!info.blacklistedCustomer,
-                    ccNumber: "",
-                    ccToken: "",
-                    ccType: "",
-                    cityId: 0,
-                    dateOfBirth: info.dateOfBirth
-                        ? `${info.dateOfBirth}T00:00:00`
-                        : null,
-                    emailId: info.email || "",
-                    expiryMonth: "",
-                    expiryYear: "",
-                    firstName: info.firstName || "",
-                    isActive: true,
-                    isCardOnFile: false,
-                    isSendEmail: !!info.sendEmail,
-                    isSendText: !!info.sendText,
-                    isTcpaEnabled: false,
-                    lastName: info.lastName || "",
-                    loyaltyPoints: Number(info.loyaltyPoints || 0),
-                    nameOnCard: "",
-                    phone: info.phone || "",
-                    recurringData: "",
-                    siteId: String(info.assignToLocSite || ""),
-                    stateId: 54,
-                    zipCode: info.zipCode || "",
+                // 3) Create Invoice (Membership or Washbook)
+                const invoiceUrl = pkg.type === "membership"
+                    ? `${base}/api/external/chargecardandcreateinvoice`
+                    : `${base}/api/invoice`;
+
+                const invoicePayload = {
+                    paymentRequest: {
+                        key,
+                        siteId: info.siteId,
+                        token: "", // card token from IPG if needed
+                        amount: pkg.price,
+                        recurringData: "",
+                        invoiceNo: `INV-${Date.now()}`,
+                        cToken: "",
+                        zipCode: info.zipCode || "00000",
+                    },
+                    invoiceRequest: {
+                        key,
+                        invoiceNumber: `INV-${Date.now()}`,
+                        siteId: info.siteId,
+                        totalAmount: pkg.price,
+                        amountDue: 0,
+                        subtotal: pkg.price,
+                        redemptions: 0,
+                        discounts: 0,
+                        tax: 0,
+                        status: "Paid",
+                        source: "CustomerPortal",
+                        siteLaneId: 1,
+                        isGateEnabled: false,
+                        isActive: true,
+                        membershipSaleList:
+                            pkg.type === "membership"
+                                ? [{ membershipId: pkg.id, isNewSignUp: true }]
+                                : [],
+                        washbookSaleList:
+                            pkg.type === "washbook"
+                                ? [{ washbookId: pkg.id, washbookNumber: "ONLINE" }]
+                                : [],
+                        paymentTypeList: [
+                            {
+                                paymentMode: "CreditCard",
+                                amount: pkg.price,
+                                referenceNumber: String(Date.now()),
+                                paymentTypeCcDetails: {}
+                            }
+                        ],
+                        customerData: { customerId },
+                        vehicleData: {}
+                    }
                 };
 
-                const createRes = await fetch(`${base}/api/customer`, {
+                const invRes = await fetch(invoiceUrl, {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
-                        Authorization: `Bearer ${token}`,
+                        Authorization: `Bearer ${token}`
                     },
-                    body: JSON.stringify(body),
+                    body: JSON.stringify(invoicePayload)
                 });
 
-                const createData = await createRes.json();
-                if (!createRes.ok) {
-                    console.error("Create customer on success failed:", createData);
-                    setStatus("error");
-                    setMessage(
-                        "Payment succeeded but customer account could not be created."
-                    );
-                    return;
-                }
-
-                const newId = createData?.data?.customerId;
-                if (newId) {
-                    setCustomerId(newId);
-                    localStorage.setItem("customerId", String(newId));
-                }
-                if (info.assignToLocSite) {
-                    setSiteId(info.assignToLocSite);
-                    localStorage.setItem("siteId", String(info.assignToLocSite));
-                }
-
                 setStatus("done");
-                setMessage("Customer created successfully after payment.");
+                setMessage("Customer synced & invoice created successfully.");
+
             } catch (err) {
-                console.error("Success page customer sync error:", err);
+                console.error(err);
                 setStatus("error");
-                setMessage(
-                    "Payment succeeded but there was an error finalizing your account."
-                );
+                setMessage("Error finalizing transaction.");
             }
         };
 
-        run();
-    }, [apiKey, setCustomerId, setSiteId]);
+        finalize();
+    }, []);
+
 
     return (
         <div className="min-h-screen bg-linear-to-br from-green-50 to-blue-50 flex items-center justify-center px-4 py-12">
