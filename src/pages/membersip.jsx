@@ -21,7 +21,7 @@ const getItemPrice = (item) => {
     return 0;
 };
 
-export default function Membership() {
+export default function Membership({ onEnsureCustomer, isProcessing = false }) {
     const [items, setItems] = useState([]);
     const [couponCode, setCouponCode] = useState("");
     const [loading, setLoading] = useState(true);
@@ -35,7 +35,6 @@ export default function Membership() {
     const apiKey = localStorage.getItem("apiKey") || "";
     const siteId = localStorage.getItem("siteId") || "";
 
-    // 🔹 URL hash → slug state
     const [slugFromHash, setSlugFromHash] = useState("");
 
     useEffect(() => {
@@ -208,25 +207,39 @@ export default function Membership() {
             setApplying(false);
         }
     };
+    // 🔹 yahan pe actual checkout handler
+    const handleCheckout = async () => {
+        if (!selectedItem) return false;
 
-    const handleCheckout = () => {
-        console.log("CHECKOUT clicked with:", {
+        // pehle customer/site ensure
+        if (typeof onEnsureCustomer === "function") {
+            const ok = await onEnsureCustomer();
+            if (!ok) {
+                // agar validation fail ya error, payment mat karo
+                return false;
+            }
+        }
+
+        // yahan extra info localStorage / context me store karna ho to kar sakte ho
+        console.log("CHECKOUT with:", {
             category: product,
             selected: selectedItem,
             totals: { subtotal, discounts, tax, total },
         });
+
+        // true return karo taake PurchaseSummary IPG ko submit kare
+        return true;
     };
 
     return (
         <div className="container mx-auto max-w-2xl">
-            <h2 className="mt-8 mb-4 text-xl font-semibold">Service</h2>
+            <h2 className="mt-2 mb-4 text-xl font-semibold">Service</h2>
 
             {loading ? (
                 <p>Loading...</p>
             ) : !selectedItem ? (
                 <p>No product found for this link.</p>
             ) : (
-                // 🔹 Sirf selected item dikhao (no list / no selection)
                 <div className="mb-6 p-4 border rounded-lg bg-white flex items-center justify-between">
                     <div>
                         <div className="font-medium">
@@ -244,7 +257,6 @@ export default function Membership() {
                 </div>
             )}
 
-            {/* Summary & pay section */}
             <PurchaseSummary
                 selectedPackage={selectedItem}
                 subtotal={subtotal}
@@ -254,7 +266,8 @@ export default function Membership() {
                 couponCode={couponCode}
                 onCouponChange={(e) => setCouponCode(e.target.value)}
                 onApplyCoupon={handleApplyCoupon}
-                onCheckout={handleCheckout}
+                onCheckout={handleCheckout}      // 👈 yahan se upar wala function ja raha
+                isProcessing={isProcessing || applying}
             />
 
             {applying && (
