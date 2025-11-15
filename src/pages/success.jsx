@@ -5,7 +5,6 @@ import { useCheckout } from "../context/CheckoutContext";
 import { CheckCircleIcon } from "lucide-react";
 
 export default function PaymentSuccess() {
-    const { setCustomerId, setSiteId, apiKey } = useCheckout();
     const [status, setStatus] = useState("processing");
     const [message, setMessage] = useState("");
 
@@ -14,6 +13,7 @@ export default function PaymentSuccess() {
             try {
                 const info = JSON.parse(localStorage.getItem("checkoutCustomerInfo") || "{}");
                 const pkg = JSON.parse(localStorage.getItem("selectedPackageInfo") || "{}");
+                console.log(pkg, info);
 
                 if (!info.email) {
                     setStatus("error");
@@ -22,7 +22,7 @@ export default function PaymentSuccess() {
                 }
 
                 const base = import.meta.env.VITE_API_BASE_URL;
-                const key = apiKey || localStorage.getItem("apiKey");
+                const key = localStorage.getItem("key");
                 const token = localStorage.getItem("accessToken");
 
                 // 1) Check if customer exists
@@ -54,6 +54,7 @@ export default function PaymentSuccess() {
                         address: info.address,
                         stateId: 54,
                         cityId: 0,
+                        status: "Paid",
                         zipCode: info.zipCode,
                         emailId: info.email,
                         phone: info.phone,
@@ -84,6 +85,7 @@ export default function PaymentSuccess() {
                     : `${base}/api/invoice`;
 
                 const invoicePayload = {
+                    source: "Web",
                     paymentRequest: {
                         key,
                         siteId: info.siteId,
@@ -96,8 +98,10 @@ export default function PaymentSuccess() {
                     },
                     invoiceRequest: {
                         key,
+                        source: "Web",
                         invoiceNumber: `INV-${Date.now()}`,
                         siteId: info.siteId,
+                        status: "Paid",
                         totalAmount: pkg.price,
                         amountDue: 0,
                         subtotal: pkg.price,
