@@ -85,56 +85,68 @@ export default function PaymentSuccess() {
                 // 3) Create Invoice (Membership or Washbook)
                 const invoiceUrl = pkg.type === "membership"
                     ? `${base}/api/external/chargecardandcreateinvoice`
-                    : `${base}/api/invoice`;
+                    // : `${base}/api/invoice`;
+                    : `${base}/api/washbook/customerwashbooks`;
+
+                // const invoicePayload = {
+                //     source: "Web",
+                //     paymentRequest: {
+                //         key,
+                //         siteId,
+                //         token,
+                //         amount: pkg.price,
+                //         recurringData: "",
+                //         invoiceNo: `INV-${Date.now()}`,
+                //         cToken: "",
+                //         zipCode: info.zipCode || "00000",
+                //     },
+                //     invoiceRequest: {
+                //         key,
+                //         source: "Web",
+                //         invoiceNumber: `INV-${Date.now()}`,
+                //         siteId,
+                //         totalAmount: pkg.price,
+                //         amountDue: 0,
+                //         subtotal: pkg.price,
+                //         redemptions: 0,
+                //         discounts: 0,
+                //         tax: 0,
+                //         status: "paid",
+                //         source: "Web",
+                //         siteLaneId: 1,
+                //         isGateEnabled: false,
+                //         isActive: true,
+                //         membershipSaleList:
+                //             pkg.type === "membership"
+                //                 ? [{ membershipId: pkg.id, isNewSignUp: true }]
+                //                 : [],
+                //         washbookSaleList:
+                //             pkg.type === "washbook"
+                //                 ? [{ washbookId: pkg.id, washbookNumber: "ONLINE" }]
+                //                 : [],
+                //         paymentTypeList: [
+                //             {
+                //                 paymentMode: "CreditCard",
+                //                 amount: pkg.price,
+                //                 referenceNumber: String(Date.now()),
+                //                 paymentTypeCcDetails: {}
+                //             }
+                //         ],
+                //         customerData: { customerId },
+                //         vehicleData: {}
+                //     }
+                // };
 
                 const invoicePayload = {
-                    source: "Web",
-                    paymentRequest: {
-                        key,
-                        siteId,
-                        token,
-                        amount: pkg.price,
-                        recurringData: "",
-                        invoiceNo: `INV-${Date.now()}`,
-                        cToken: "",
-                        zipCode: info.zipCode || "00000",
-                    },
-                    invoiceRequest: {
-                        key,
-                        source: "Web",
-                        invoiceNumber: `INV-${Date.now()}`,
-                        siteId,
-                        totalAmount: pkg.price,
-                        amountDue: 0,
-                        subtotal: pkg.price,
-                        redemptions: 0,
-                        discounts: 0,
-                        tax: 0,
-                        status: "paid",
-                        source: "Web",
-                        siteLaneId: 1,
-                        isGateEnabled: false,
-                        isActive: true,
-                        membershipSaleList:
-                            pkg.type === "membership"
-                                ? [{ membershipId: pkg.id, isNewSignUp: true }]
-                                : [],
-                        washbookSaleList:
-                            pkg.type === "washbook"
-                                ? [{ washbookId: pkg.id, washbookNumber: "ONLINE" }]
-                                : [],
-                        paymentTypeList: [
-                            {
-                                paymentMode: "CreditCard",
-                                amount: pkg.price,
-                                referenceNumber: String(Date.now()),
-                                paymentTypeCcDetails: {}
-                            }
-                        ],
-                        customerData: { customerId },
-                        vehicleData: {}
-                    }
-                };
+                    washbookId: pkg.id,
+                    washbookNumber: "ONLINE",
+                    numberOfWashes: 2,
+                    customerId,
+                    siteId,
+                    key,
+                    isActive: true,
+                    expirationDate: "2025-11-19T00:00:00"
+                }
 
                 const invRes = await fetch(invoiceUrl, {
                     method: "POST",
