@@ -187,7 +187,7 @@ export default function Membership() {
                                         </div>
                                     </div>
                                     <div className="text-lg font-semibold">
-                                        ${Number(p.membershipPrice || 0).toFixed(2)}
+                                        د.إ{Number(p.membershipPrice || 0).toFixed(2)}
                                     </div>
                                 </div>
                             </button>

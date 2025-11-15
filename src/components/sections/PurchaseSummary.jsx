@@ -207,19 +207,19 @@ export default function PurchaseSummary({
                 <div className="flex justify-between text-sm">
                     <span className="text-gray-600">Subtotal</span>
                     <span className="text-gray-900">
-                        ${Number(subtotal).toFixed(2)}
+                        د.إ{Number(subtotal).toFixed(2)}
                     </span>
                 </div>
                 <div className="flex justify-between text-sm">
                     <span className="text-gray-600">Discounts</span>
                     <span className="text-gray-900">
-                        -${Number(discounts).toFixed(2)}
+                        -د.إ{Number(discounts).toFixed(2)}
                     </span>
                 </div>
                 <div className="flex justify-between text-sm">
                     <span className="text-gray-600">Tax</span>
                     <span className="text-gray-900">
-                        ${Number(tax).toFixed(2)}
+                        د.إ{Number(tax).toFixed(2)}
                     </span>
                 </div>
             </div>
@@ -228,7 +228,7 @@ export default function PurchaseSummary({
             <div className="flex justify-between items-center py-4 border-t border-gray-200 border-b">
                 <span className="font-semibold text-gray-900">Total</span>
                 <span className="text-xl font-bold text-gray-900">
-                    ${Number(total).toFixed(2)}
+                    د.إ{Number(total).toFixed(2)}
                 </span>
             </div>
 
@@ -247,6 +247,7 @@ export default function PurchaseSummary({
                     <input
                         type="checkbox"
                         id="terms"
+                        required
                         className="w-4 h-4 border border-gray-300 rounded cursor-pointer"
                     />
                     <label htmlFor="terms" className="text-sm text-gray-600">
