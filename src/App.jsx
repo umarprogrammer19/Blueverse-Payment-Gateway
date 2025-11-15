@@ -10,9 +10,6 @@ function App() {
   const [error, setError] = useState("");
   const { setApiKey, setSiteId, setCustomerId, apiKey } = useCheckout();
 
-  // 🔹 controls showing membership panel on the right
-  const [showMembership, setShowMembership] = useState(false);
-
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -112,10 +109,11 @@ function App() {
     })();
   }, [setApiKey]);
 
-  const handleProceedToCheckout = async () => {
+  // 🔹 ye function CHECKOUT se pehle call hoga
+  const ensureCustomerAndSite = async () => {
     if (!canProceed) {
       setError("Please fill in all required fields.");
-      return;
+      return false;
     }
 
     try {
@@ -188,6 +186,8 @@ function App() {
         const createData = await createRes.json();
         if (!createRes.ok) {
           console.error("Create customer failed:", createData);
+          setError("Failed to create customer.");
+          return false;
         } else {
           const newId = createData?.data?.customerId;
           if (newId) {
@@ -203,11 +203,11 @@ function App() {
       setSiteId(formData.assignToLocSite);
       localStorage.setItem("siteId", String(formData.assignToLocSite));
 
-      // 👉 instead of redirect, show Membership panel on the right
-      setShowMembership(true);
+      return true; // sab ok, payment continue kar sakta hai
     } catch (err) {
-      console.error("Proceed/Customer flow error:", err);
+      console.error("Ensure customer/site error:", err);
       setError("Something went wrong. Please try again.");
+      return false;
     } finally {
       setLoading(false);
     }
@@ -215,7 +215,6 @@ function App() {
 
   return (
     <main className="mx-auto max-w-6xl px-8 py-10">
-      {/* 2 columns: left = personal info, right = membership */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
         {/* LEFT: Personal info */}
         <div>
@@ -230,21 +229,16 @@ function App() {
             {error && (
               <p className="text-red-500 text-sm mb-2">{error}</p>
             )}
-
-            <button
-              type="button"
-              onClick={handleProceedToCheckout}
-              disabled={loading}
-              className="px-7 py-2 text-lg rounded-lg bg-blue-600 text-white disabled:opacity-60"
-            >
-              {loading ? "Please wait..." : "Next"}
-            </button>
+            {/* 🔻 yahan koi button nahi ab */}
           </div>
         </div>
 
-        {/* RIGHT: Membership / products */}
+        {/* RIGHT: Membership / products + checkout */}
         <section className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 min-h-[420px]">
-          <Membership />
+          <Membership
+            onEnsureCustomer={ensureCustomerAndSite}
+            isProcessing={loading}
+          />
         </section>
       </div>
     </main>
@@ -253,6 +247,7 @@ function App() {
 
 export default App;
 
+// refresh helpers same as before
 async function doRefresh() {
   try {
     const base = import.meta.env.VITE_API_BASE_URL;
