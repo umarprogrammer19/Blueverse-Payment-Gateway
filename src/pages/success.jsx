@@ -21,7 +21,7 @@ export default function PaymentSuccess() {
                     setMessage("No saved customer details found.");
                     return;
                 }
-                
+
                 const base = import.meta.env.VITE_API_BASE_URL;
                 const key = localStorage.getItem("apiKey");
                 console.log(key);
@@ -92,7 +92,7 @@ export default function PaymentSuccess() {
                     paymentRequest: {
                         key,
                         siteId,
-                        token: "",
+                        token: accessToken,
                         amount: pkg.price,
                         recurringData: "",
                         invoiceNo: `INV-${Date.now()}`,
@@ -103,7 +103,7 @@ export default function PaymentSuccess() {
                         key,
                         source: "Web",
                         invoiceNumber: `INV-${Date.now()}`,
-                        siteIdsiteId,
+                        siteId,
                         status: "Paid",
                         totalAmount: pkg.price,
                         amountDue: 0,
@@ -112,7 +112,7 @@ export default function PaymentSuccess() {
                         discounts: 0,
                         tax: 0,
                         status: "Paid",
-                        source: "CustomerPortal",
+                        source: "Web",
                         siteLaneId: 1,
                         isGateEnabled: false,
                         isActive: true,
@@ -145,7 +145,8 @@ export default function PaymentSuccess() {
                     },
                     body: JSON.stringify(invoicePayload)
                 });
-
+                const invData = await invRes.json();
+                console.log(invData, "invoice data");
                 setStatus("done");
                 setMessage("Customer synced & invoice created successfully.");
 
