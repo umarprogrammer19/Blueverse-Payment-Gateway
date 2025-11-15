@@ -92,7 +92,7 @@ export default function PaymentSuccess() {
                     paymentRequest: {
                         key,
                         siteId,
-                        token: accessToken,
+                        token,
                         amount: pkg.price,
                         recurringData: "",
                         invoiceNo: `INV-${Date.now()}`,
