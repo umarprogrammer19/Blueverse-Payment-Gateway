@@ -226,8 +226,6 @@ export default function Membership({ onEnsureCustomer, isProcessing = false }) {
 
     return (
         <div className="container mx-auto max-w-2xl">
-            <h2 className="mt-2 mb-4 text-xl font-semibold">Service</h2>
-
             {loading ? (
                 <p>Loading...</p>
             ) : !selectedItem ? (

@@ -21,7 +21,7 @@ export default function PersonalInfo({ formData, onChange, siteData }) {
     const handleSiteChange = (e) => {
         const value = e.target.value;
         setSelectedSiteId(value);
-        onChange(e); // parent ko propagate
+        onChange(e); 
     };
 
     return (

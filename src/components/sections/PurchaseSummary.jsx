@@ -233,7 +233,20 @@ export default function PurchaseSummary({
                     د.إ{Number(total).toFixed(2)}
                 </span>
             </div>
-
+            <div className="flex items-center gap-2">
+                <input
+                    type="checkbox"
+                    id="terms"
+                    required
+                    className="w-4 h-4 border border-gray-300 rounded cursor-pointer"
+                />
+                <label htmlFor="terms" className="text-sm text-gray-600">
+                    I agree to the{" "}
+                    <a href="#" className="text-blue-600 hover:underline">
+                        Terms of Service
+                    </a>
+                </label>
+            </div>
             {/* Checkout */}
             <button
                 onClick={handleCheckout}
@@ -243,34 +256,7 @@ export default function PurchaseSummary({
                 {isProcessing ? "Processing..." : "CHECKOUT"}
             </button>
 
-            {/* Terms + Security */}
-            <div className="space-y-4">
-                <div className="flex items-center gap-2">
-                    <input
-                        type="checkbox"
-                        id="terms"
-                        required
-                        className="w-4 h-4 border border-gray-300 rounded cursor-pointer"
-                    />
-                    <label htmlFor="terms" className="text-sm text-gray-600">
-                        I agree to the{" "}
-                        <a href="#" className="text-blue-600 hover:underline">
-                            Terms of Service
-                        </a>
-                    </label>
-                </div>
 
-                <div className="flex items-center gap-2 pt-4 border-t border-gray-200">
-                    <img src="/visa.png" alt="Visa" className="h-8" />
-                    <img src="/money.png" alt="Mastercard" className="h-8" />
-                    <img src="/amex.png" alt="American Express" className="h-8" />
-                </div>
-
-                <div className="flex items-center gap-2 text-xs text-gray-500">
-                    <Check size={16} className="text-green-600" />
-                    <span>Payments are secure and encrypted</span>
-                </div>
-            </div>
         </div>
     );
 }
