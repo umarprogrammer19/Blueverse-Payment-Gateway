@@ -10,7 +10,7 @@ export default function ProductSelect({ value, onChange }) {
             <select
                 value={value}
                 onChange={(e) => onChange(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none appearance-none bg-white"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2162AF] focus:border-[#2162AF] outline-none appearance-none bg-white"
             >
                 {url.split("/")[3].includes("membership") ? (
                     <option value="Membership">Membership</option>

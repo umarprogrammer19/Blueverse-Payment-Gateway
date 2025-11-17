@@ -240,7 +240,7 @@ export default function Membership({ onEnsureCustomer, isProcessing = false }) {
             ) : !selectedItem ? (
                 <p>No product found for this link.</p>
             ) : (
-                <div className="mb-6 p-4 border rounded-lg bg-white flex items-center justify-between">
+                <div className="mb-6 p-5 border rounded-xl bg-white shadow-sm flex items-center justify-between">
                     <div>
                         <div className="font-medium">
                             {selectedItem.membershipName || selectedItem.washbookName}
@@ -251,7 +251,7 @@ export default function Membership({ onEnsureCustomer, isProcessing = false }) {
                             </div>
                         )}
                     </div>
-                    <div className="text-lg font-semibold">
+                    <div className="text-lg font-semibold text-[#2162AF]">
                         د.إ{getItemPrice(selectedItem).toFixed(2)}
                     </div>
                 </div>

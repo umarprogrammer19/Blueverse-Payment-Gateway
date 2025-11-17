@@ -10,7 +10,7 @@ export default function CarInfo({ formData, onChange }) {
                 placeholder="LP number"
                 value={formData.licensePlate}
                 onChange={onChange}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2162AF] focus:border-[#2162AF] transition-colors"
             />
         </div>
     )

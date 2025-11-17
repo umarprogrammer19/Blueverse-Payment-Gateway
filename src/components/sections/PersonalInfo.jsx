@@ -2,7 +2,7 @@ import CarInfo from "./CarInfo";
 
 export default function PersonalInfo({ formData, onChange, siteData }) {
     return (
-        <div className="max-w-4xl mx-auto p-6 bg-white rounded-xl shadow-sm border border-gray-200">
+        <div className="max-w-4xl mx-auto p-6 bg-white rounded-2xl shadow-sm border border-gray-200">
             <h2 className="text-2xl font-bold text-gray-900 mb-8">
                 Personal Information
             </h2>
@@ -24,7 +24,7 @@ export default function PersonalInfo({ formData, onChange, siteData }) {
                         required
                         value={formData.firstName || ""}
                         onChange={onChange}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2162AF] focus:border-[#2162AF] transition-colors"
                     />
                 </div>
 
@@ -43,7 +43,7 @@ export default function PersonalInfo({ formData, onChange, siteData }) {
                         required
                         value={formData.lastName || ""}
                         onChange={onChange}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2162AF] focus:border-[#2162AF] transition-colors"
                     />
                 </div>
 
@@ -58,7 +58,7 @@ export default function PersonalInfo({ formData, onChange, siteData }) {
                         placeholder="Email address"
                         value={formData.email}
                         onChange={onChange}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2162AF] focus:border-[#2162AF] transition-colors"
                     />
                 </div>
 
@@ -77,7 +77,7 @@ export default function PersonalInfo({ formData, onChange, siteData }) {
                         required
                         value={formData.phone || ""}
                         onChange={onChange}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2162AF] focus:border-[#2162AF] transition-colors"
                     />
                 </div>
                 <CarInfo formData={formData} onChange={onChange} siteData={siteData} />
@@ -95,7 +95,7 @@ export default function PersonalInfo({ formData, onChange, siteData }) {
                         placeholder="Enter full address"
                         value={formData.address || ""}
                         onChange={onChange}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2162AF] focus:border-[#2162AF] transition-colors"
                     />
                 </div>
             </div>
