@@ -19,14 +19,6 @@ const router = createBrowserRouter([
         element: <App />,
       },
       {
-        path: "/wash",
-        element: <Washbook />,
-      },
-      {
-        path: "/membership",
-        element: <Membership />,
-      },
-      {
         path: "/failure",
         element: <PaymentFailure />,
       },
