@@ -35,14 +35,20 @@ function App() {
     activeCustomer: true,
   });
 
-  // helper: har update pe localStorage me dump
   const saveCustomerInfoToStorage = (data) => {
     try {
       const payload = {
         ...data,
         createdAt: new Date().toISOString(),
       };
+
       localStorage.setItem("checkoutCustomerInfo", JSON.stringify(payload));
+
+      if (data.licensePlate && data.licensePlate.trim()) {
+        localStorage.setItem("licensePlate", data.licensePlate.trim());
+      } else {
+        localStorage.removeItem("licensePlate");
+      }
     } catch (e) {
       console.error("Failed to save checkoutCustomerInfo:", e);
     }
@@ -53,12 +59,10 @@ function App() {
 
     setFormData((prev) => {
       const updated = { ...prev, [name]: value };
-      // har change pe persist
       saveCustomerInfoToStorage(updated);
       return updated;
     });
 
-    // (for future) agar kabhi UI se site change karein
     if (name === "assignToLocSite" && value) {
       setSiteId(value);
       localStorage.setItem("siteId", String(value));
