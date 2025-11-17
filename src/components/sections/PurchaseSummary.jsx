@@ -61,9 +61,10 @@ export default function PurchaseSummary({
         const hmac = CryptoJS.HmacSHA256(raw, secret);
         return CryptoJS.enc.Base64.stringify(hmac);
     }
+    const isMembership = !!selectedPackage?.membershipId;
 
     function buildPaymentParams() {
-        return {
+        const base = {
             hash_algorithm: "HMACSHA256",
             language,
             hashExtended: "",
@@ -80,6 +81,19 @@ export default function PurchaseSummary({
             responseSuccessURL,
             transactionNotificationURL,
         };
+
+        if (isMembership) {
+            // number of installments: example 12 months plan
+            base.recurringInstallmentCount = 12;
+
+            // period: 'day' | 'week' | 'month' | 'year'
+            base.recurringInstallmentPeriod = "month";
+
+            // frequency: number of payment in a period
+            base.recurringInstallmentFrequency = 1; 
+        }
+
+        return base;
     }
 
     function submitToIPG() {
