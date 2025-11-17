@@ -4,10 +4,8 @@ import App from "./App.jsx";
 import { CheckoutProvider } from "./context/CheckoutContext.jsx";
 import "./index.css";
 import Layout from "./layout.jsx";
-import Membership from "./pages/membersip.jsx";
-import PaymentSuccess from "./pages/success.jsx";
-import Washbook from "./pages/washbook.jsx";
 import PaymentFailure from "./pages/failure.jsx";
+import PaymentSuccess from "./pages/success.jsx";
 
 const router = createBrowserRouter([
   {
