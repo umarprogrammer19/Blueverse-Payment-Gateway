@@ -1,5 +1,7 @@
 "use client";
 
+import CarInfo from "./CarInfo";
+
 export default function PersonalInfo({ formData, onChange, siteData }) {
     return (
         <div className="max-w-4xl mx-auto p-6 bg-white rounded-xl shadow-sm border border-gray-200">
@@ -80,7 +82,7 @@ export default function PersonalInfo({ formData, onChange, siteData }) {
                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
                     />
                 </div>
-
+                <CarInfo formData={formData} onChange={onChange} siteData={siteData} />
                 <div className="md:col-span-2">
                     <label
                         htmlFor="address"
