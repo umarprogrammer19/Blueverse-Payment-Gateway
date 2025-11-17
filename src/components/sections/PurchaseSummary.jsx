@@ -1,5 +1,3 @@
-"use client";
-
 import CryptoJS from "crypto-js";
 import moment from "moment-timezone";
 import { useMemo, useState } from "react";

@@ -1,5 +1,3 @@
-"use client"
-
 export default function CarInfo({ formData, onChange }) {
     return (
         <div className="md:col-span-2">

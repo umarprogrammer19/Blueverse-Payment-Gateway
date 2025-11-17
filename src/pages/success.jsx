@@ -1,8 +1,5 @@
-"use client";
-
-import { useEffect, useState } from "react";
-import { useCheckout } from "../context/CheckoutContext";
 import { CheckCircleIcon } from "lucide-react";
+import { useEffect, useState } from "react";
 
 export default function PaymentSuccess() {
     const [status, setStatus] = useState("processing");

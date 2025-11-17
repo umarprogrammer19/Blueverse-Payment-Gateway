@@ -1,5 +1,3 @@
-"use client";
-
 import CarInfo from "./CarInfo";
 
 export default function PersonalInfo({ formData, onChange, siteData }) {
