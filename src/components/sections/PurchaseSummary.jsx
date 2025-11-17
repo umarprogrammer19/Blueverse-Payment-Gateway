@@ -83,7 +83,7 @@ export default function PurchaseSummary({
         if (isMembership) {
             base.recurringInstallmentCount = 12;
             base.recurringInstallmentPeriod = "month";
-            base.recurringInstallmentFrequency = 1; 
+            base.recurringInstallmentFrequency = 1;
         }
 
         return base;
@@ -241,6 +241,7 @@ export default function PurchaseSummary({
                 <span className="font-semibold text-gray-900">Total</span>
                 <span className="text-xl font-bold text-gray-900">
                     د.إ{Number(total).toFixed(2)}
+                    {isMembership && <span className="text-base text-gray-600">/month</span>}
                 </span>
             </div>
 
