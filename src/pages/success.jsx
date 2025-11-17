@@ -1,3 +1,5 @@
+"use client";
+
 import { CheckCircleIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -8,9 +10,14 @@ export default function PaymentSuccess() {
     useEffect(() => {
         const finalize = async () => {
             try {
-                const info = JSON.parse(localStorage.getItem("checkoutCustomerInfo") || "{}");
-                const pkg = JSON.parse(localStorage.getItem("selectedPackageInfo") || "{}");
+                const info = JSON.parse(
+                    localStorage.getItem("checkoutCustomerInfo") || "{}"
+                );
+                const pkg = JSON.parse(
+                    localStorage.getItem("selectedPackageInfo") || "{}"
+                );
                 const siteId = localStorage.getItem("siteId");
+
                 console.log(pkg, info);
 
                 if (!info.email) {
@@ -21,16 +28,14 @@ export default function PaymentSuccess() {
 
                 const base = import.meta.env.VITE_API_BASE_URL;
                 const key = localStorage.getItem("apiKey");
-                console.log(key);
-
                 const token = localStorage.getItem("accessToken");
 
                 // 1) Check if customer exists
                 const listRes = await fetch(`${base}/api/customer?key=${key}`, {
                     headers: {
                         "Content-Type": "application/json",
-                        Authorization: `Bearer ${token}`
-                    }
+                        Authorization: `Bearer ${token}`,
+                    },
                 });
 
                 const json = await listRes.json();
@@ -39,7 +44,9 @@ export default function PaymentSuccess() {
                 let customerId = null;
 
                 const existing = customers.find(
-                    c => String(c.emailId).toLowerCase() === info.email.toLowerCase()
+                    (c) =>
+                        String(c.emailId || "").toLowerCase() ===
+                        String(info.email || "").toLowerCase()
                 );
 
                 if (existing) {
@@ -63,52 +70,138 @@ export default function PaymentSuccess() {
                         isCardOnFile: false,
                         blackList: false,
                         isActive: true,
-                        source: "web"
+                        source: "web",
                     };
 
                     const createRes = await fetch(`${base}/api/customer`, {
                         method: "POST",
                         headers: {
                             "Content-Type": "application/json",
-                            Authorization: `Bearer ${token}`
+                            Authorization: `Bearer ${token}`,
                         },
-                        body: JSON.stringify(createBody)
+                        body: JSON.stringify(createBody),
                     });
 
                     const cdata = await createRes.json();
                     customerId = cdata.data;
                 }
 
+                if (!customerId) {
+                    setStatus("error");
+                    setMessage("Unable to resolve customer id.");
+                    return;
+                }
+
+                // 🔁 2.5) VEHICLE / RFID LOGIC
+                const rawLp =
+                    info.licensePlate || localStorage.getItem("licensePlate") || "";
+                const licensePlate = String(rawLp).trim();
+
+                if (!licensePlate) {
+                    console.warn("No license plate provided, skipping vehicle step.");
+                } else {
+                    const vehiclesRes = await fetch(
+                        `${base}/api/vehicle?key=${key}&customerId=${customerId}&pageSize=999999`,
+                        {
+                            headers: {
+                                "Content-Type": "application/json",
+                                Authorization: `Bearer ${token}`,
+                            },
+                        }
+                    );
+
+                    const vehiclesJson = await vehiclesRes.json();
+                    const vehicles = Array.isArray(vehiclesJson.data)
+                        ? vehiclesJson.data
+                        : [];
+
+                    const normalize = (val) =>
+                        String(val || "").replace(/\s+/g, "").toLowerCase();
+                    const lpNorm = normalize(licensePlate);
+
+                    const vehicleWithRFID = vehicles.find(
+                        (v) => normalize(v.licensePlate) === lpNorm && v.rfid
+                    );
+
+                    if (vehicleWithRFID) {
+                        console.warn("RFID already exists for this license plate", {
+                            vehicleWithRFID,
+                        });
+                        setStatus("error");
+                        setMessage(
+                            "A vehicle with this license plate already has an RFID assigned."
+                        );
+                        return;
+                    }
+
+                    const vehiclePayload = {
+                        color: "",
+                        customerId: String(customerId),
+                        description: "",
+                        isActive: true,
+                        isBlackListed: false,
+                        key,
+                        licensePlate,
+                        rfid: licensePlate,
+                        specialPricingId: "",
+                        vehicleMakeId: "",
+                        vehicleModelId: "",
+                        year: "",
+                    };
+
+                    const vehicleRes = await fetch(`${base}/api/vehicle`, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            Authorization: `Bearer ${token}`,
+                        },
+                        body: JSON.stringify(vehiclePayload),
+                    });
+
+                    const vehicleData = await vehicleRes.json();
+                    if (!vehicleRes.ok) {
+                        console.error("Vehicle create failed:", vehicleData);
+                        setStatus("error");
+                        setMessage("Error creating vehicle for this license plate.");
+                        return;
+                    }
+
+                    console.log("Vehicle created:", vehicleData);
+                }
+                // -----------------------------------------
                 // 3) Create Invoice (Membership or Washbook)
-                const invoiceUrl = pkg.type === "membership"
-                    ? `${base}/api/external/chargecardandcreateinvoice`
-                    // : `${base}/api/invoice`;
-                    : `${base}/api/washbook/customerwashbooks`;
+                const invoiceUrl =
+                    pkg.type === "membership"
+                        ? `${base}/api/external/chargecardandcreateinvoice`
+                        : `${base}/api/washbook/customerwashbooks`;
 
                 const invoicePayload = {
                     washbookId: pkg.id,
-                    washbookNumber: Math.floor(100000 + Math.random() * 900000),
+                    washbookNumber: Math.floor(
+                        100000 + Math.random() * 900000
+                    ),
                     numberOfWashes: 2,
                     customerId,
                     siteId,
                     key,
                     isActive: true,
-                    expirationDate: "2025-11-19T00:00:00"
-                }
+                    expirationDate: "2025-11-19T00:00:00",
+                };
 
                 const invRes = await fetch(invoiceUrl, {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
-                        Authorization: `Bearer ${token}`
+                        Authorization: `Bearer ${token}`,
                     },
-                    body: JSON.stringify(invoicePayload)
+                    body: JSON.stringify(invoicePayload),
                 });
+
                 const invData = await invRes.json();
                 console.log(invData, "invoice data");
+
                 setStatus("done");
                 setMessage("Customer synced & invoice created successfully.");
-
             } catch (err) {
                 console.error(err);
                 setStatus("error");
@@ -118,7 +211,6 @@ export default function PaymentSuccess() {
 
         finalize();
     }, []);
-
 
     return (
         <div className="min-h-screen bg-linear-to-br from-green-50 to-blue-50 flex items-center justify-center px-4 py-12">
@@ -168,13 +260,15 @@ export default function PaymentSuccess() {
 
                     {status === "done" && (
                         <p className="text-green-700">
-                            {message || "Your payment has been processed successfully."}
+                            {message ||
+                                "Your payment has been processed successfully."}
                         </p>
                     )}
 
                     {status === "no-data" && (
                         <p className="text-gray-600">
-                            Payment completed, but no stored customer information was found.
+                            Payment completed, but no stored customer information was
+                            found.
                         </p>
                     )}
 
