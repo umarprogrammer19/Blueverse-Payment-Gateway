@@ -18,7 +18,7 @@ export default function PaymentSuccess() {
                 );
                 const siteId = localStorage.getItem("siteId");
 
-                console.log(pkg, info);
+                console.log("pkg/info", pkg, info);
 
                 if (!info.email) {
                     setStatus("error");
@@ -30,7 +30,13 @@ export default function PaymentSuccess() {
                 const key = localStorage.getItem("apiKey");
                 const token = localStorage.getItem("accessToken");
 
-                // 1) Check if customer exists
+                if (!key || !token) {
+                    setStatus("error");
+                    setMessage("Missing API key or token.");
+                    return;
+                }
+
+                // 1) Customer resolve / create
                 const listRes = await fetch(`${base}/api/customer?key=${key}`, {
                     headers: {
                         "Content-Type": "application/json",
@@ -52,7 +58,6 @@ export default function PaymentSuccess() {
                 if (existing) {
                     customerId = existing.customerId;
                 } else {
-                    // 2) Create customer
                     const createBody = {
                         key,
                         siteId,
@@ -92,14 +97,16 @@ export default function PaymentSuccess() {
                     return;
                 }
 
-                // 🔁 2.5) VEHICLE / RFID LOGIC
+                // 2) Vehicle / RFID logic
+                //    - license plate localStorage + info se
+                //    - RFID exist ho to error
+                //    - warna naya vehicle POST, jis se vehicleId milega
                 const rawLp =
                     info.licensePlate || localStorage.getItem("licensePlate") || "";
                 const licensePlate = String(rawLp).trim();
+                let vehicleId = null;
 
-                if (!licensePlate) {
-                    console.warn("No license plate provided, skipping vehicle step.");
-                } else {
+                if (licensePlate) {
                     const vehiclesRes = await fetch(
                         `${base}/api/vehicle?key=${key}&customerId=${customerId}&pageSize=999999`,
                         {
@@ -134,6 +141,7 @@ export default function PaymentSuccess() {
                         return;
                     }
 
+                    // naya vehicle create karo (RFID = licensePlate)
                     const vehiclePayload = {
                         color: "",
                         customerId: String(customerId),
@@ -159,49 +167,101 @@ export default function PaymentSuccess() {
                     });
 
                     const vehicleData = await vehicleRes.json();
+                    console.log("vehicle create:", vehicleData);
+
                     if (!vehicleRes.ok) {
-                        console.error("Vehicle create failed:", vehicleData);
                         setStatus("error");
                         setMessage("Error creating vehicle for this license plate.");
                         return;
                     }
 
-                    console.log("Vehicle created:", vehicleData);
+                    vehicleId = vehicleData.data || vehicleData.vehicleId || null;
+                } else {
+                    console.warn("No license plate provided – vehicle step skipped.");
                 }
-                // -----------------------------------------
-                // 3) Create Invoice (Membership or Washbook)
-                const invoiceUrl =
-                    pkg.type === "membership"
-                        ? `${base}/api/external/chargecardandcreateinvoice`
-                        : `${base}/api/washbook/customerwashbooks`;
 
-                const invoicePayload = {
-                    washbookId: pkg.id,
-                    washbookNumber: Math.floor(
-                        100000 + Math.random() * 900000
-                    ),
-                    numberOfWashes: 2,
-                    customerId,
-                    siteId,
-                    key,
-                    isActive: true,
-                    expirationDate: "2025-11-19T00:00:00",
-                };
+                const isMembership = pkg.type === "membership";
 
-                const invRes = await fetch(invoiceUrl, {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        Authorization: `Bearer ${token}`,
-                    },
-                    body: JSON.stringify(invoicePayload),
-                });
+                // 3) Branch: membership vs washbook
+                if (isMembership) {
+                    // membership = /api/vehicle/assignfreemembership
+                    if (!vehicleId) {
+                        setStatus("error");
+                        setMessage("Unable to resolve vehicle for this membership.");
+                        return;
+                    }
 
-                const invData = await invRes.json();
-                console.log(invData, "invoice data");
+                    const assignPayload = {
+                        customerId: String(customerId),
+                        key,
+                        membershipId: String(pkg.id), // selectedPackageInfo.id = membershipId
+                        vehicleId: String(vehicleId),
+                    };
 
-                setStatus("done");
-                setMessage("Customer synced & invoice created successfully.");
+                    console.log("assignfreemembership payload:", assignPayload);
+
+                    const assignRes = await fetch(
+                        `${base}/api/vehicle/assignfreemembership`,
+                        {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json",
+                                Authorization: `Bearer ${token}`,
+                            },
+                            body: JSON.stringify(assignPayload),
+                        }
+                    );
+
+                    const assignData = await assignRes.json();
+                    console.log("assignfreemembership resp:", assignData);
+
+                    if (!assignRes.ok) {
+                        setStatus("error");
+                        setMessage("Failed to assign membership to vehicle.");
+                        return;
+                    }
+
+                    setStatus("done");
+                    setMessage(
+                        "Customer synced & membership assigned to vehicle successfully."
+                    );
+                } else {
+                    const invoiceUrl = `${base}/api/washbook/customerwashbooks`;
+
+                    const invoicePayload = {
+                        washbookId: pkg.id,
+                        washbookNumber: Math.floor(100000 + Math.random() * 900000),
+                        numberOfWashes: 2,
+                        customerId,
+                        siteId,
+                        key,
+                        isActive: true,
+                        expirationDate: pkg.expirationDate,
+                    };
+
+                    console.log("washbook payload:", invoicePayload);
+
+                    const invRes = await fetch(invoiceUrl, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            Authorization: `Bearer ${token}`,
+                        },
+                        body: JSON.stringify(invoicePayload),
+                    });
+
+                    const invData = await invRes.json();
+                    console.log("washbook invoice resp:", invData);
+
+                    if (!invRes.ok) {
+                        setStatus("error");
+                        setMessage("Error creating washbook entry.");
+                        return;
+                    }
+
+                    setStatus("done");
+                    setMessage("Customer synced & washbook created successfully.");
+                }
             } catch (err) {
                 console.error(err);
                 setStatus("error");
@@ -260,15 +320,13 @@ export default function PaymentSuccess() {
 
                     {status === "done" && (
                         <p className="text-green-700">
-                            {message ||
-                                "Your payment has been processed successfully."}
+                            {message || "Your payment has been processed successfully."}
                         </p>
                     )}
 
                     {status === "no-data" && (
                         <p className="text-gray-600">
-                            Payment completed, but no stored customer information was
-                            found.
+                            Payment completed, but no stored customer information was found.
                         </p>
                     )}
 
