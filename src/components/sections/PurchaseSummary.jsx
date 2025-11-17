@@ -81,13 +81,8 @@ export default function PurchaseSummary({
         };
 
         if (isMembership) {
-            // number of installments: example 12 months plan
             base.recurringInstallmentCount = 12;
-
-            // period: 'day' | 'week' | 'month' | 'year'
             base.recurringInstallmentPeriod = "month";
-
-            // frequency: number of payment in a period
             base.recurringInstallmentFrequency = 1; 
         }
 
