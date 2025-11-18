@@ -256,7 +256,7 @@ export default function PurchaseSummary({
                 <button
                     type="button"
                     onClick={() => setDetailsOpen((prev) => !prev)}
-                    className="w-full flex items-center justify-between py-3 text-md font-medium text-gray-700"
+                    className="w-full flex items-center justify-between px-4 py-3 text-md font-medium text-gray-700"
                 >
                     <span>Discounts</span>
                     <span
