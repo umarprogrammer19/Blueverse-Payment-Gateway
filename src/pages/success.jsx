@@ -50,9 +50,12 @@ export default function PaymentSuccess() {
                 let customerId = null;
 
                 const existing = customers.find(
-                    (c) =>
-                        String(c.emailId || "").toLowerCase() ===
-                        String(info.email || "").toLowerCase()
+                    (c) => {
+                        console.log(c);
+                        console.log(c.emailId, info.email, info,"___________________");
+
+                        return c.emailId === info.email
+                    }
                 );
 
                 console.log(existing);
