@@ -55,6 +55,8 @@ export default function PaymentSuccess() {
                         String(info.email || "").toLowerCase()
                 );
 
+                console.log(existing);
+
                 if (existing) {
                     customerId = existing.customerId;
                 } else {
