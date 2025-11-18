@@ -13,12 +13,12 @@ export default function PaymentSuccess() {
                 const info = JSON.parse(
                     localStorage.getItem("checkoutCustomerInfo") || "{}"
                 );
+
                 const pkg = JSON.parse(
                     localStorage.getItem("selectedPackageInfo") || "{}"
                 );
-                const siteId = localStorage.getItem("siteId");
 
-                console.log("pkg/info", pkg, info);
+                const siteId = localStorage.getItem("siteId");
 
                 if (!info.email) {
                     setStatus("error");
@@ -51,14 +51,9 @@ export default function PaymentSuccess() {
 
                 const existing = customers.find(
                     (c) => {
-                        console.log(c);
-                        console.log(c.emailId, info.email, info,"___________________");
-
                         return c.emailId === info.email
                     }
                 );
-
-                console.log(existing);
 
                 if (existing) {
                     customerId = existing.customerId;
@@ -172,7 +167,6 @@ export default function PaymentSuccess() {
                     });
 
                     const vehicleData = await vehicleRes.json();
-                    console.log("vehicle create:", vehicleData);
 
                     if (!vehicleRes.ok) {
                         setStatus("error");
@@ -203,8 +197,6 @@ export default function PaymentSuccess() {
                         vehicleId: String(vehicleId),
                     };
 
-                    console.log("assignfreemembership payload:", assignPayload);
-
                     const assignRes = await fetch(
                         `${base}/api/vehicle/assignfreemembership`,
                         {
@@ -218,7 +210,6 @@ export default function PaymentSuccess() {
                     );
 
                     const assignData = await assignRes.json();
-                    console.log("assignfreemembership resp:", assignData);
 
                     if (!assignRes.ok) {
                         setStatus("error");
@@ -244,8 +235,6 @@ export default function PaymentSuccess() {
                         expirationDate: pkg.expirationDate,
                     };
 
-                    console.log("washbook payload:", invoicePayload);
-
                     const invRes = await fetch(invoiceUrl, {
                         method: "POST",
                         headers: {
@@ -254,9 +243,6 @@ export default function PaymentSuccess() {
                         },
                         body: JSON.stringify(invoicePayload),
                     });
-
-                    const invData = await invRes.json();
-                    console.log("washbook invoice resp:", invData);
 
                     if (!invRes.ok) {
                         setStatus("error");
