@@ -1,4 +1,5 @@
 import CryptoJS from "crypto-js";
+import { ChevronUp } from "lucide-react";
 import moment from "moment-timezone";
 import { useMemo, useState } from "react";
 
@@ -6,8 +7,8 @@ export default function PurchaseSummary({
     selectedPackage,
     subtotal = 0,
     discounts = 0,
-    tax = 0,
-    total = 0,
+    tax = 0, // not used, VAT compute ho raha hai
+    total = 0, // ignore, chargeTotal se naya total
     couponCode,
     onCouponChange,
     onApplyCoupon,
@@ -36,7 +37,7 @@ export default function PurchaseSummary({
 
     const [couponError, setCouponError] = useState("");
     const [termsAccepted, setTermsAccepted] = useState(false);
-    const [detailsOpen, setDetailsOpen] = useState(false); // ✅ sirf mobile accordion
+    const [detailsOpen, setDetailsOpen] = useState(false); // mobile accordion
 
     const txndatetime = useMemo(
         () => moment().tz(timezone).format("YYYY:MM:DD-HH:mm:ss"),
@@ -53,6 +54,7 @@ export default function PurchaseSummary({
         return Number.isFinite(vat) ? vat : 0;
     }, [baseAmount]);
 
+    // Total with VAT
     const chargeTotal = useMemo(() => {
         const totalWithVat = baseAmount + vatAmount;
         return totalWithVat.toFixed(2);
@@ -83,7 +85,7 @@ export default function PurchaseSummary({
             timezone,
             txndatetime,
             storename: storeName,
-            chargetotal: chargeTotal, // total with VAT
+            chargetotal: chargeTotal,
             currency,
             paymentMethod,
             oid,
@@ -175,6 +177,7 @@ export default function PurchaseSummary({
         )
         : 0;
 
+    // Details WITHOUT total (Total bahar hai)
     const detailsContent = (
         <>
             {/* Selected Package */}
@@ -194,7 +197,7 @@ export default function PurchaseSummary({
                 )}
             </div>
 
-            {/* Order Summary */}
+            {/* Order Summary (no total) */}
             <div className="space-y-3 py-4 border-t border-gray-200">
                 <div className="flex justify-between text-sm">
                     <span className="text-gray-600">Subtotal</span>
@@ -214,17 +217,6 @@ export default function PurchaseSummary({
                         د.إ{vatAmount.toFixed(2)}
                     </span>
                 </div>
-            </div>
-
-            {/* Total */}
-            <div className="flex justify-between items-center py-4 border-t border-gray-200 border-b">
-                <span className="font-semibold text-gray-900">Total</span>
-                <span className="text-xl font-bold text-gray-900">
-                    د.إ{chargeTotal}
-                    {isMembership && (
-                        <span className="text-base text-gray-600">/month</span>
-                    )}
-                </span>
             </div>
         </>
     );
@@ -259,19 +251,19 @@ export default function PurchaseSummary({
                 )}
             </div>
 
-            {/* 🔽 Mobile: accordion */}
+            {/* Mobile: dropdown for details (no total inside) */}
             <div className="border border-gray-200 rounded-lg md:hidden">
                 <button
                     type="button"
                     onClick={() => setDetailsOpen((prev) => !prev)}
-                    className="w-full flex items-center justify-between px-4 py-3 text-sm font-medium text-gray-700"
+                    className="w-full flex items-center justify-between py-3 text-md font-medium text-gray-700"
                 >
-                    <span>More details</span>
+                    <span>Discounts</span>
                     <span
                         className={`transform transition-transform ${detailsOpen ? "rotate-180" : ""
                             }`}
                     >
-                        ▼
+                        <ChevronUp />
                     </span>
                 </button>
 
@@ -280,9 +272,20 @@ export default function PurchaseSummary({
                 )}
             </div>
 
-            {/* 💻 Tablet/Desktop: always open */}
+            {/* Desktop / Tablet: details always visible */}
             <div className="hidden md:block space-y-4">
                 {detailsContent}
+            </div>
+
+            {/* Total ALWAYS outside dropdown */}
+            <div className="flex justify-between items-center py-4 border-t border-gray-200 border-b">
+                <span className="font-semibold text-gray-900">Total</span>
+                <span className="text-xl font-bold text-gray-900">
+                    د.إ{chargeTotal}
+                    {isMembership && (
+                        <span className="text-base text-gray-600">/month</span>
+                    )}
+                </span>
             </div>
 
             {/* Checkout */}
