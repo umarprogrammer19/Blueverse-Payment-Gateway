@@ -35,16 +35,28 @@ export default function PurchaseSummary({
     const [oid, setOid] = useState("");
 
     const [couponError, setCouponError] = useState("");
-    const [termsAccepted, setTermsAccepted] = useState(false); // ✅ NEW
+    const [termsAccepted, setTermsAccepted] = useState(false);
+    const [detailsOpen, setDetailsOpen] = useState(false); // ✅ sirf mobile accordion
 
-    const txndatetime = useMemo(() => {
-        return moment().tz(timezone).format("YYYY:MM:DD-HH:mm:ss");
-    }, [timezone]);
+    const txndatetime = useMemo(
+        () => moment().tz(timezone).format("YYYY:MM:DD-HH:mm:ss"),
+        [timezone]
+    );
+
+    const subtotalNum = Number(subtotal) || 0;
+    const discountsNum = Number(discounts) || 0;
+    const baseAmount = Math.max(subtotalNum - discountsNum, 0);
+
+    // 5% VAT
+    const vatAmount = useMemo(() => {
+        const vat = baseAmount * 0.05;
+        return Number.isFinite(vat) ? vat : 0;
+    }, [baseAmount]);
 
     const chargeTotal = useMemo(() => {
-        const val = Number(total ?? 0);
-        return val.toFixed(2);
-    }, [total]);
+        const totalWithVat = baseAmount + vatAmount;
+        return totalWithVat.toFixed(2);
+    }, [baseAmount, vatAmount]);
 
     function createSignature(paymentParams, secret) {
         const ignore = new Set(["hashExtended"]);
@@ -59,6 +71,7 @@ export default function PurchaseSummary({
         const hmac = CryptoJS.HmacSHA256(raw, secret);
         return CryptoJS.enc.Base64.stringify(hmac);
     }
+
     const isMembership = !!selectedPackage?.membershipId;
 
     function buildPaymentParams() {
@@ -70,7 +83,7 @@ export default function PurchaseSummary({
             timezone,
             txndatetime,
             storename: storeName,
-            chargetotal: chargeTotal,
+            chargetotal: chargeTotal, // total with VAT
             currency,
             paymentMethod,
             oid,
@@ -109,13 +122,12 @@ export default function PurchaseSummary({
     }
 
     const handleCheckout = async () => {
-        // ✅ hard guard
         if (!termsAccepted) return;
 
         if (typeof onCheckout === "function") {
             try {
                 const result = await onCheckout();
-                if (result === false) return; // validation failed upstream
+                if (result === false) return;
             } catch (err) {
                 console.error("onCheckout error:", err);
                 return;
@@ -124,7 +136,6 @@ export default function PurchaseSummary({
         submitToIPG();
     };
 
-    // coupon validation
     function validateCoupon() {
         if (!expirationDate && !isUsed) {
             setCouponError("");
@@ -153,10 +164,7 @@ export default function PurchaseSummary({
     const handleApplyCouponClick = () => {
         const isValid = validateCoupon();
         if (!isValid) return;
-
-        if (typeof onApplyCoupon === "function") {
-            onApplyCoupon();
-        }
+        if (typeof onApplyCoupon === "function") onApplyCoupon();
     };
 
     const selectedName =
@@ -166,6 +174,60 @@ export default function PurchaseSummary({
             selectedPackage.washbookPrice ?? selectedPackage.membershipPrice ?? 0
         )
         : 0;
+
+    const detailsContent = (
+        <>
+            {/* Selected Package */}
+            <div className="space-y-2">
+                <h4 className="font-semibold">Selected package</h4>
+                {selectedPackage ? (
+                    <div className="flex justify-between text-sm">
+                        <span className="text-gray-700">{selectedName}</span>
+                        <span className="text-gray-900">
+                            د.إ{selectedPrice.toFixed(2)}
+                        </span>
+                    </div>
+                ) : (
+                    <div className="text-sm text-gray-500">
+                        Please select a package above.
+                    </div>
+                )}
+            </div>
+
+            {/* Order Summary */}
+            <div className="space-y-3 py-4 border-t border-gray-200">
+                <div className="flex justify-between text-sm">
+                    <span className="text-gray-600">Subtotal</span>
+                    <span className="text-gray-900">
+                        د.إ{subtotalNum.toFixed(2)}
+                    </span>
+                </div>
+                <div className="flex justify-between text-sm">
+                    <span className="text-gray-600">Discounts</span>
+                    <span className="text-gray-900">
+                        -د.إ{discountsNum.toFixed(2)}
+                    </span>
+                </div>
+                <div className="flex justify-between text-sm">
+                    <span className="text-gray-600">Tax (5% VAT)</span>
+                    <span className="text-gray-900">
+                        د.إ{vatAmount.toFixed(2)}
+                    </span>
+                </div>
+            </div>
+
+            {/* Total */}
+            <div className="flex justify-between items-center py-4 border-t border-gray-200 border-b">
+                <span className="font-semibold text-gray-900">Total</span>
+                <span className="text-xl font-bold text-gray-900">
+                    د.إ{chargeTotal}
+                    {isMembership && (
+                        <span className="text-base text-gray-600">/month</span>
+                    )}
+                </span>
+            </div>
+        </>
+    );
 
     return (
         <div className="space-y-6">
@@ -197,52 +259,30 @@ export default function PurchaseSummary({
                 )}
             </div>
 
-            {/* Selected Package */}
-            <div className="space-y-2">
-                <h4 className="font-semibold">Selected package</h4>
-                {selectedPackage ? (
-                    <div className="flex justify-between text-sm">
-                        <span className="text-gray-700">{selectedName}</span>
-                        <span className="text-gray-900">
-                            د.إ{selectedPrice.toFixed(2)}
-                        </span>
-                    </div>
-                ) : (
-                    <div className="text-sm text-gray-500">
-                        Please select a package above.
-                    </div>
+            {/* 🔽 Mobile: accordion */}
+            <div className="border border-gray-200 rounded-lg md:hidden">
+                <button
+                    type="button"
+                    onClick={() => setDetailsOpen((prev) => !prev)}
+                    className="w-full flex items-center justify-between px-4 py-3 text-sm font-medium text-gray-700"
+                >
+                    <span>More details</span>
+                    <span
+                        className={`transform transition-transform ${detailsOpen ? "rotate-180" : ""
+                            }`}
+                    >
+                        ▼
+                    </span>
+                </button>
+
+                {detailsOpen && (
+                    <div className="px-4 pb-4 pt-1 space-y-4">{detailsContent}</div>
                 )}
             </div>
 
-            {/* Order Summary */}
-            <div className="space-y-3 py-4 border-t border-gray-200">
-                <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Subtotal</span>
-                    <span className="text-gray-900">
-                        د.إ{Number(subtotal).toFixed(2)}
-                    </span>
-                </div>
-                <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Discounts</span>
-                    <span className="text-gray-900">
-                        -د.إ{Number(discounts).toFixed(2)}
-                    </span>
-                </div>
-                <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Tax</span>
-                    <span className="text-gray-900">
-                        د.إ{Number(tax).toFixed(2)}
-                    </span>
-                </div>
-            </div>
-
-            {/* Total */}
-            <div className="flex justify-between items-center py-4 border-t border-gray-200 border-b">
-                <span className="font-semibold text-gray-900">Total</span>
-                <span className="text-xl font-bold text-gray-900">
-                    د.إ{Number(total).toFixed(2)}
-                    {isMembership && <span className="text-base text-gray-600">/month</span>}
-                </span>
+            {/* 💻 Tablet/Desktop: always open */}
+            <div className="hidden md:block space-y-4">
+                {detailsContent}
             </div>
 
             {/* Checkout */}
@@ -254,7 +294,7 @@ export default function PurchaseSummary({
                 {isProcessing ? "Processing..." : "CHECKOUT"}
             </button>
 
-            {/* ✅ Terms of service must be accepted */}
+            {/* Terms */}
             <div className="flex relative left-1 items-center gap-2">
                 <input
                     type="checkbox"
