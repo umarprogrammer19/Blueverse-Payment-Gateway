@@ -37,7 +37,7 @@ export default function PaymentSuccess() {
                 }
 
                 // 1) Customer resolve / create
-                const listRes = await fetch(`${base}/api/customer?key=${key}`, {
+                const listRes = await fetch(`${base}/api/customer?key=${key}&pageSize=10000`, {
                     headers: {
                         "Content-Type": "application/json",
                         Authorization: `Bearer ${token}`,
