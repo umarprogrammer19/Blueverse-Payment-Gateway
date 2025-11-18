@@ -245,8 +245,17 @@ export default function PurchaseSummary({
                 </span>
             </div>
 
+            {/* Checkout */}
+            <button
+                onClick={handleCheckout}
+                disabled={!selectedPackage || isProcessing || !termsAccepted}
+                className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white font-bold py-3 px-4 rounded-lg transition-colors"
+            >
+                {isProcessing ? "Processing..." : "CHECKOUT"}
+            </button>
+
             {/* ✅ Terms of service must be accepted */}
-            <div className="flex items-center gap-2">
+            <div className="flex relative left-1 items-center gap-2">
                 <input
                     type="checkbox"
                     id="terms"
@@ -262,15 +271,6 @@ export default function PurchaseSummary({
                     </a>
                 </label>
             </div>
-
-            {/* Checkout */}
-            <button
-                onClick={handleCheckout}
-                disabled={!selectedPackage || isProcessing || !termsAccepted}
-                className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white font-bold py-3 px-4 rounded-lg transition-colors"
-            >
-                {isProcessing ? "Processing..." : "CHECKOUT"}
-            </button>
         </div>
     );
 }
