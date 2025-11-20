@@ -207,8 +207,9 @@ function App() {
   };
 
   return (
-    <main className="mx-auto max-w-6xl px-8 py-10 min-h-[calc(100vh-90px)]">
-      <div className="grid grid-cols-1 lg:grid-cols-2 mt-4 gap-8 items-start">
+    <main className="mx-auto max-w-6xl px-4 py-2 min-h-[calc(100vh-90px)]">
+      <div className="grid grid-cols-1 lg:grid-cols-2 mt-4 gap-2 lg:gap-8 items-start">
+
         {/* LEFT: Personal info */}
         <div>
           <PersonalInfo
@@ -224,7 +225,7 @@ function App() {
         </div>
 
         {/* RIGHT: Membership / products + checkout */}
-        <section className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 min-h-[420px]">
+        <section className="bg-white rounded-2xl shadow-sm border border-gray-200 p-4 lg:min-h-[420px]">
           <Membership
             onEnsureCustomer={ensureCustomerAndSite}
             isProcessing={loading}

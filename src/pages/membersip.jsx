@@ -240,7 +240,7 @@ export default function Membership({ onEnsureCustomer, isProcessing = false }) {
             ) : !selectedItem ? (
                 <p>No product found for this link.</p>
             ) : (
-                <div className="mb-6 p-5 border rounded-xl bg-white shadow-sm flex items-center justify-between">
+                <div className="hidden sm:flex mb-6 p-5 border rounded-xl bg-white shadow-sm items-center justify-between">
                     <div>
                         <div className="font-medium">
                             {selectedItem.membershipName || selectedItem.washbookName}
