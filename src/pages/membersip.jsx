@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import PurchaseSummary from "../components/sections/PurchaseSummary";
+import { useCheckout } from "../context/CheckoutContext.jsx";
 
 // helper: name → slug
 const slugify = (str = "") =>
@@ -29,8 +30,9 @@ export default function Membership({ onEnsureCustomer, isProcessing = false }) {
     const initial = "Membership";
     const [product, setProduct] = useState(initial);
 
-    const apiKey = localStorage.getItem("apiKey") || "";
-    const siteId = localStorage.getItem("siteId") || "";
+    // take apiKey/siteId from central Checkout context so this component
+    // reacts when App finishes authentication and sets the key.
+    const { apiKey, siteId } = useCheckout();
 
     const [slugFromHash, setSlugFromHash] = useState("");
 
@@ -48,6 +50,9 @@ export default function Membership({ onEnsureCustomer, isProcessing = false }) {
 
     // fetch washbooks + memberships
     useEffect(() => {
+        // wait for apiKey to be available from context (App fetches it)
+        if (!apiKey) return;
+
         (async () => {
             try {
                 const base = import.meta.env.VITE_API_BASE_URL;
