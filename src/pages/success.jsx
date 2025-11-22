@@ -1,8 +1,7 @@
-"use client";
-
 import { CheckCircleIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 
+// Payment Success
 export default function PaymentSuccess() {
     const [status, setStatus] = useState("processing");
     const [message, setMessage] = useState("");
