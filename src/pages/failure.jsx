@@ -1,7 +1,6 @@
-"use client";
-
 import { XCircleIcon } from "@heroicons/react/24/outline";
 
+// Payment Failed Function
 export default function PaymentFailure() {
     return (
         <div className="min-h-screen bg-linear-to-br from-red-50 to-pink-50 flex items-center justify-center px-4 py-12">
