@@ -7,8 +7,8 @@ export default function PurchaseSummary({
     selectedPackage,
     subtotal = 0,
     discounts = 0,
-    tax = 0, // not used, VAT compute ho raha hai
-    total = 0, // ignore, chargeTotal se naya total
+    tax = 0, 
+    total = 0, 
     couponCode,
     onCouponChange,
     onApplyCoupon,
