@@ -159,7 +159,7 @@ export function useCheckout() {
     return ctx;
 }
 
-// utils
+
 function sumAmounts(list) {
     return (list || []).reduce((acc, s) => acc + Number(s.amount ?? 0), 0);
 }
