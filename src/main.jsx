@@ -7,6 +7,7 @@ import Layout from "./layout.jsx";
 import PaymentFailure from "./pages/failure.jsx";
 import PaymentSuccess from "./pages/success.jsx";
 
+// For Creating Route
 const router = createBrowserRouter([
   {
     path: "/",

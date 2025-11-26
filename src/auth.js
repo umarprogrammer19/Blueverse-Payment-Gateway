@@ -1,3 +1,4 @@
+// Define access and refresh token
 const LS_ACCESS = "accessToken";
 const LS_REFRESH = "refreshToken";
 
@@ -16,6 +17,7 @@ export function getTokens() {
     return null;
 }
 
+// For setting tokens
 export function setTokens(tokens) {
     inMemoryTokens = tokens;
     localStorage.setItem(LS_ACCESS, tokens.accessToken);
