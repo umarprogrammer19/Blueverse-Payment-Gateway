@@ -5,9 +5,16 @@ import { useEffect, useState } from "react";
 export default function PaymentSuccess() {
     const [status, setStatus] = useState("processing");
     const [message, setMessage] = useState("");
+    const [oid, setOid] = useState("");
 
     useEffect(() => {
         const finalize = async () => {
+            // Get OID from localStorage
+            const savedOid = localStorage.getItem("oid");
+            if (savedOid) {
+                setOid(savedOid);
+            }
+
             try {
                 const info = JSON.parse(
                     localStorage.getItem("checkoutCustomerInfo") || "{}"
@@ -277,6 +284,13 @@ export default function PaymentSuccess() {
                     Thank you for your purchase. Your transaction has been processed
                     successfully.
                 </p>
+
+                {oid && (
+                    <div className="mb-6 p-4 bg-gray-100 rounded-lg text-left">
+                        <p className="text-sm font-medium text-gray-700">Order ID (OID)</p>
+                        <p className="text-lg font-semibold text-gray-900 break-all">{oid}</p>
+                    </div>
+                )}
 
                 <button
                     onClick={() =>

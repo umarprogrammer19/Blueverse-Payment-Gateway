@@ -1,7 +1,7 @@
 import CryptoJS from "crypto-js";
 import { ChevronUp } from "lucide-react";
 import moment from "moment-timezone";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 
 export default function PurchaseSummary({
     selectedPackage,
@@ -33,12 +33,22 @@ export default function PurchaseSummary({
     const [currency, setCurrency] = useState(defaultCurrency);
     const [paymentMethod, setPaymentMethod] = useState(defaultPaymentMethod);
     const [checkoutoption, setCheckoutoption] = useState(defaultCheckoutOption);
-    const [oid, setOid] = useState("");
+    const [oid, setOid] = useState(() => {
+        const savedOid = localStorage.getItem("oid");
+        return savedOid || "";
+    });
 
     const [couponError, setCouponError] = useState("");
     const [termsAccepted, setTermsAccepted] = useState(false);
     const [detailsOpen, setDetailsOpen] = useState(false); // mobile details accordion
     const [couponAccordionOpen, setCouponAccordionOpen] = useState(false); // mobile coupon accordion
+
+    // Save OID to localStorage whenever it changes
+    useEffect(() => {
+        if (oid) {
+            localStorage.setItem("oid", oid);
+        }
+    }, [oid]);
 
     const txndatetime = useMemo(
         () => moment().tz(timezone).format("YYYY:MM:DD-HH:mm:ss"),
