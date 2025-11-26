@@ -7,6 +7,26 @@ export default function PaymentSuccess() {
     const [message, setMessage] = useState("");
 
     useEffect(() => {
+        const params = new URLSearchParams(window.location.search);
+
+        const status = params.get("status");
+        const transactionId = params.get("transactionId");
+
+        if (status !== "success") {
+            setStatus("error");
+            setMessage("Payment failed or invalid response.");
+            return;
+        }
+
+        if (transactionId) {
+            localStorage.setItem("ipgTransactionId", transactionId);
+        }
+
+        setStatus("done");
+        setMessage(`Payment Verified. Transaction ID: ${transactionId}`);
+    }, []);
+
+    useEffect(() => {
         const finalize = async () => {
             try {
                 const info = JSON.parse(

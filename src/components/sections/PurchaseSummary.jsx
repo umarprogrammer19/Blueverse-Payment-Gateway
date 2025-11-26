@@ -261,7 +261,7 @@ export default function PurchaseSummary({
           <button
             onClick={handleApplyCouponClick}
             type="button"
-            className="flex-shrink-0 px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white font-medium rounded-lg transition-colors"
+            className="shrink-0 px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white font-medium rounded-lg transition-colors"
           >
             Apply
           </button>
