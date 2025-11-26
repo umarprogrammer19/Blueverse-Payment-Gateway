@@ -33,20 +33,17 @@ export default function PurchaseSummary({
     const [currency, setCurrency] = useState(defaultCurrency);
     const [paymentMethod, setPaymentMethod] = useState(defaultPaymentMethod);
     const [checkoutoption, setCheckoutoption] = useState(defaultCheckoutOption);
-    const [oid, setOid] = useState(() => {
-        const savedOid = localStorage.getItem("oid");
-        return savedOid || "";
-    });
+    const [oid, setOid] = useState("");
 
     const [couponError, setCouponError] = useState("");
     const [termsAccepted, setTermsAccepted] = useState(false);
     const [detailsOpen, setDetailsOpen] = useState(false); // mobile details accordion
     const [couponAccordionOpen, setCouponAccordionOpen] = useState(false); // mobile coupon accordion
 
-    // Save OID to localStorage whenever it changes
+    // Save oid to localStorage
     useEffect(() => {
         if (oid) {
-            localStorage.setItem("oid", oid);
+            localStorage.setItem("transaction id", oid);
         }
     }, [oid]);
 
