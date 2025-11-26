@@ -7,15 +7,6 @@ export default function PaymentSuccess() {
     const [message, setMessage] = useState("");
 
     useEffect(() => {
-        // Log the transaction oid (if present) from the IPG redirect query params
-        try {
-            const params = new URLSearchParams(window.location.search || "");
-            const queryOid = params.get("oid") || params.get("OID") || params.get("paymentid") || params.get("transactionId");
-            if (queryOid) console.log("oid:", queryOid);
-        } catch (e) {
-            console.warn("Unable to read oid from URL", e);
-        }
-
         const finalize = async () => {
             try {
                 const info = JSON.parse(
