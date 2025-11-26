@@ -8,7 +8,6 @@ export default function CarInfo({ formData, onChange }) {
                 type="text"
                 name="licensePlate"
                 placeholder="LP number"
-                {/* Comes from App */}
                 value={formData.licensePlate}
                 onChange={onChange}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2162AF] focus:border-[#2162AF] transition-colors"
