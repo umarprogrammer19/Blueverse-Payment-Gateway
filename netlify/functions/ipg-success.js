@@ -11,7 +11,7 @@ exports.handler = async (event) => {
   const formData = new URLSearchParams(event.body);
   const data = Object.fromEntries(formData.entries());
   const transactionId = data.ipgTransactionId;
-
+  const respCode = data.processor_response_code;
   // Simple status
   const status =
     respCode === "00" ? "success" : "failed";
