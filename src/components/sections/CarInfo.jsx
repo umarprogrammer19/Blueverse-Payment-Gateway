@@ -88,9 +88,9 @@ export default function CarInfo({ formData, onChange }) {
         <div className="md:col-span-2">
             {/* Region Selection */}
             <div className="mb-4">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                            License Plate<span className="text-red-500">*</span>
-                        </label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                    License Plate<span className="text-red-500">*</span>
+                </label>
                 <div className="flex items-center space-x-4">
                     <label className="inline-flex items-center">
                         <input
@@ -121,9 +121,6 @@ export default function CarInfo({ formData, onChange }) {
                 <div className='flex gap-2'>
                     {/* Country/State Select */}
                     <div className="mb-4">
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                            <span className="text-red-500">*</span>
-                        </label>
                         <select
                             name="country"
                             value={selectedCountry}

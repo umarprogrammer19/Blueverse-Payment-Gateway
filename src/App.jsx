@@ -8,7 +8,7 @@ function App() {
   const [siteData, setSiteData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const { setApiKey, setSiteId, setCustomerId, apiKey } = useCheckout();
+  const { setApiKey, setSiteId, setCustomerId, apiKey, derivedTotals } = useCheckout();
 
   const [formData, setFormData] = useState({
     firstName: "",
@@ -194,6 +194,13 @@ function App() {
       if (formData.assignToLocSite) {
         setSiteId(formData.assignToLocSite);
         localStorage.setItem("siteId", String(formData.assignToLocSite));
+      }
+
+      // Save discounts to localStorage
+      if (derivedTotals?.discounts) {
+        localStorage.setItem("checkoutDiscounts", String(derivedTotals.discounts));
+      } else {
+        localStorage.removeItem("checkoutDiscounts");
       }
 
       // 👇 5 second wait before redirect
