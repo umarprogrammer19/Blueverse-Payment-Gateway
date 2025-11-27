@@ -33,6 +33,10 @@ function App() {
     sendEmail: false,
     blacklistedCustomer: false,
     activeCustomer: true,
+    region: "Emirates",
+    country: "Dubai",
+    alphabeticPart: "",
+    numericPart: ""
   });
 
   const saveCustomerInfoToStorage = (data) => {
@@ -44,8 +48,8 @@ function App() {
 
       localStorage.setItem("checkoutCustomerInfo", JSON.stringify(payload));
 
-      if (data.licensePlate && data.licensePlate.trim()) {
-        localStorage.setItem("licensePlate", data.licensePlate.trim());
+      if (data.alphabeticPart.trim() && data.numericPart.trim()) {
+        localStorage.setItem("licensePlate", data.alphabeticPart.trim() + data.numericPart.trim());
       } else {
         localStorage.removeItem("licensePlate");
       }
@@ -230,7 +234,7 @@ function App() {
             onEnsureCustomer={ensureCustomerAndSite}
             isProcessing={loading}
           />
-        </section>
+        </section> 
       </div>
     </main>
   );

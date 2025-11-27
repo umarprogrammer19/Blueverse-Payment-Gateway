@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 export default function CarInfo({ formData, onChange }) {
     const [selectedRegion, setSelectedRegion] = useState(formData.region || 'Emirates');
@@ -88,9 +88,9 @@ export default function CarInfo({ formData, onChange }) {
         <div className="md:col-span-2">
             {/* Region Selection */}
             <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Region<span className="text-red-500">*</span>
-                </label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                            License Plate<span className="text-red-500">*</span>
+                        </label>
                 <div className="flex items-center space-x-4">
                     <label className="inline-flex items-center">
                         <input
@@ -122,7 +122,6 @@ export default function CarInfo({ formData, onChange }) {
                     {/* Country/State Select */}
                     <div className="mb-4">
                         <label className="block text-sm font-medium text-gray-700 mb-2">
-                            {selectedRegion === 'Emirates' ? 'Emirate' : 'Country'}
                             <span className="text-red-500">*</span>
                         </label>
                         <select
@@ -131,7 +130,7 @@ export default function CarInfo({ formData, onChange }) {
                             onChange={handleCountryChange}
                             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2162AF] focus:border-[#2162AF] transition-colors"
                         >
-                            <option value="">Select {selectedRegion === 'Emirates' ? 'Emirate' : 'Country'}</option>
+                            <option value="">Select</option>
                             {countriesToDisplay.map((country) => (
                                 <option key={country} value={country}>
                                     {country}
@@ -142,9 +141,6 @@ export default function CarInfo({ formData, onChange }) {
 
                     {/* License Plate Inputs */}
                     <div className="mb-4 inline-block">
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                            License Plate<span className="text-red-500">*</span>
-                        </label>
                         <div className="grid grid-cols-2 gap-4">
                             <input
                                 type="text"
