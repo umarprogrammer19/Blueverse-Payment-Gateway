@@ -261,6 +261,7 @@ export default function Membership({ onEnsureCustomer, isProcessing = false }) {
             )}
 
             {/* Add-on buttons for available packages */}
+            {(slugFromHash === "sedan" || slugFromHash === "suv") && <p className="relative text-md font-bold left-2.5">Add Ons:</p>}
             {(slugFromHash === "sedan" || slugFromHash === "suv") && (
                 <div className="button-container mb-6">
                     {availableAddOns.map((addOn) => (
@@ -268,8 +269,8 @@ export default function Membership({ onEnsureCustomer, isProcessing = false }) {
                             key={addOn.name}
                             onClick={() => handleAddOnClick(addOn)}
                             className={`package-button px-3 py-2 m-2 border rounded-lg text-sm shadow-md ${selectedAddOns.some((item) => item.name === addOn.name)
-                                    ? "bg-blue-500 text-white"
-                                    : "bg-white text-gray-700"
+                                ? "bg-blue-500 text-white"
+                                : "bg-white text-gray-700"
                                 }`}
                         >
                             {addOn.name} - AED {addOn.price}
