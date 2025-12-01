@@ -23,17 +23,14 @@ export default function Membership({ onEnsureCustomer, isProcessing = false }) {
     const [items, setItems] = useState([]);
     const [couponCode, setCouponCode] = useState("");
     const [loading, setLoading] = useState(true);
-
     const [applying, setApplying] = useState(false);
     const [serverTotals, setServerTotals] = useState(null);
+    const [selectedAddOns, setSelectedAddOns] = useState([]);
 
     const initial = "Membership";
     const [product, setProduct] = useState(initial);
 
-    // take apiKey/siteId from central Checkout context so this component
-    // reacts when App finishes authentication and sets the key.
     const { apiKey, siteId } = useCheckout();
-
     const [slugFromHash, setSlugFromHash] = useState("");
 
     useEffect(() => {
@@ -48,9 +45,8 @@ export default function Membership({ onEnsureCustomer, isProcessing = false }) {
         return () => window.removeEventListener("hashchange", updateSlug);
     }, []);
 
-    // fetch washbooks + memberships
+    // Fetch washbooks + memberships
     useEffect(() => {
-        // wait for apiKey to be available from context (App fetches it)
         if (!apiKey) return;
 
         (async () => {
@@ -59,12 +55,8 @@ export default function Membership({ onEnsureCustomer, isProcessing = false }) {
                 const token = localStorage.getItem("accessToken");
                 const key = apiKey || localStorage.getItem("apiKey") || "";
 
-                const urlWashbook = `${base}/api/washbook?key=${encodeURIComponent(
-                    key
-                )}`;
-                const urlMembership = `${base}/api/membership?key=${encodeURIComponent(
-                    key
-                )}&pageSize=10000&target=table&type=0&isActive=true`;
+                const urlWashbook = `${base}/api/washbook?key=${encodeURIComponent(key)}`;
+                const urlMembership = `${base}/api/membership?key=${encodeURIComponent(key)}&pageSize=10000&target=table&type=0&isActive=true`;
 
                 const [resWash, resMem] = await Promise.all([
                     fetch(urlWashbook, {
@@ -98,13 +90,6 @@ export default function Membership({ onEnsureCustomer, isProcessing = false }) {
                     };
                 });
 
-                console.table(
-                    withSlugs.map((i) => ({
-                        name: i.membershipName || i.washbookName,
-                        slug: i.slug,
-                    }))
-                );
-
                 setItems(withSlugs);
             } catch (e) {
                 console.error("Membership fetch error:", e);
@@ -114,7 +99,7 @@ export default function Membership({ onEnsureCustomer, isProcessing = false }) {
         })();
     }, [apiKey]);
 
-    // selected item from hash
+    // Selected item from hash
     const selectedItem = useMemo(() => {
         if (!items.length) return null;
 
@@ -128,7 +113,7 @@ export default function Membership({ onEnsureCustomer, isProcessing = false }) {
         );
         return firstMembership || items[0] || null;
     }, [items, slugFromHash]);
-    
+
     useEffect(() => {
         if (selectedItem) {
             localStorage.setItem("selectedPackageInfo", JSON.stringify({
@@ -139,17 +124,38 @@ export default function Membership({ onEnsureCustomer, isProcessing = false }) {
             }));
         }
     }, [selectedItem]);
-    // totals
+
+    // Totals
     const fallbackSubtotal = getItemPrice(selectedItem);
-    const subtotal = serverTotals?.subtotal ?? fallbackSubtotal;
+    const subtotal = selectedAddOns.reduce((total, addOn) => total + addOn.price, fallbackSubtotal); // Updated subtotal to include add-ons
     const discounts = serverTotals?.discounts ?? 0;
     const tax = serverTotals?.tax ?? 0;
-    const total =
-        serverTotals?.totalAmount ?? Math.max(fallbackSubtotal - discounts + tax, 0);
+    const total = serverTotals?.totalAmount ?? Math.max(subtotal - discounts + tax, 0); // Updated total
 
-    // coupon
+    // Add-on buttons for sedan or suv
+    const availableAddOns = [
+        { name: "Engine Bay Cleaning", price: 50 },
+        { name: "Undercarriage Flush", price: 30 },
+        { name: "Pet Hair Removal", price: 50 },
+        { name: "Deep Undercarriage Clean", price: 60 },
+        { name: "Seat Shampoo", price: 40 },
+        { name: "Leather Clean & Condition", price: 50 },
+    ];
+
+    const handleAddOnClick = (addOn) => {
+        setSelectedAddOns((prev) => {
+            // If the add-on is already selected, remove it; otherwise, add it
+            const exists = prev.find((item) => item.name === addOn.name);
+            if (exists) {
+                return prev.filter((item) => item.name !== addOn.name);
+            } else {
+                return [...prev, addOn];
+            }
+        });
+    };
+
     const handleApplyCoupon = async () => {
-        const promo = (couponCode || "").trim().toUpperCase();
+        const promo = couponCode.trim().toUpperCase();
         if (!promo) return console.log("Empty code — skipping");
         if (!siteId) return console.error("Missing siteId");
         if (!selectedItem) return console.error("Select a package first (via slug)");
@@ -193,7 +199,7 @@ export default function Membership({ onEnsureCustomer, isProcessing = false }) {
             }
 
             const DISCOUNT_TYPE = { FIXED: 1, PERCENT: 2 };
-            const sub = getItemPrice(selectedItem);
+            const sub = subtotal;
             const val = Number(match.discountValue || 0);
 
             let discount = 0;
@@ -220,21 +226,13 @@ export default function Membership({ onEnsureCustomer, isProcessing = false }) {
         }
     };
 
-    // checkout handler – parent pe user info/localStorage ka kaam
     const handleCheckout = async () => {
         if (!selectedItem) return false;
-
         if (typeof onEnsureCustomer === "function") {
             const ok = await onEnsureCustomer();
             if (!ok) return false;
         }
-
-        console.log("CHECKOUT with:", {
-            category: product,
-            selected: selectedItem,
-            totals: { subtotal, discounts, tax, total },
-        });
-
+        console.log("CHECKOUT with:", { category: product, selected: selectedItem, totals: { subtotal, discounts, tax, total } });
         return true;
     };
 
@@ -262,8 +260,27 @@ export default function Membership({ onEnsureCustomer, isProcessing = false }) {
                 </div>
             )}
 
+            {/* Add-on buttons for available packages */}
+            {(slugFromHash === "sedan" || slugFromHash === "suv") && (
+                <div className="button-container mb-6">
+                    {availableAddOns.map((addOn) => (
+                        <button
+                            key={addOn.name}
+                            onClick={() => handleAddOnClick(addOn)}
+                            className={`package-button px-3 py-2 m-2 border rounded-lg text-sm shadow-md ${selectedAddOns.some((item) => item.name === addOn.name)
+                                    ? "bg-blue-500 text-white"
+                                    : "bg-white text-gray-700"
+                                }`}
+                        >
+                            {addOn.name} - AED {addOn.price}
+                        </button>
+                    ))}
+                </div>
+            )}
+
             <PurchaseSummary
                 selectedPackage={selectedItem}
+                addOns={selectedAddOns}
                 subtotal={subtotal}
                 discounts={discounts}
                 tax={tax}
