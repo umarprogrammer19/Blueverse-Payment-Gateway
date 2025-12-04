@@ -19,6 +19,33 @@ const getItemPrice = (item) => {
     return 0;
 };
 
+// Special handler for #sedan or #sedan-103.95 / #suv or #suv-XYZ
+const getSpecialVehiclePrice = (slug) => {
+    const sedanMatch = slug.match(/^sedan(?:-([\d.]+))?$/i);
+    if (sedanMatch) {
+        const price = sedanMatch[1] ? Number(sedanMatch[1]) : 103.95;
+        return {
+            membershipName: "Sedan",
+            membershipPrice: price,
+            slug: "sedan",
+            membershipId: "sedan-special", // fake ID for localStorage
+        };
+    }
+
+    const suvMatch = slug.match(/^suv(?:-([\d.]+))?$/i);
+    if (suvMatch) {
+        const price = suvMatch[1] ? Number(suvMatch[1]) : 150.0; // default SUV price
+        return {
+            membershipName: "SUV",
+            membershipPrice: price,
+            slug: "suv",
+            membershipId: "suv-special", // fake ID for localStorage
+        };
+    }
+
+    return null;
+};
+
 export default function Membership({ onEnsureCustomer, isProcessing = false }) {
     const [items, setItems] = useState([]);
     const [couponCode, setCouponCode] = useState("");
@@ -99,8 +126,13 @@ export default function Membership({ onEnsureCustomer, isProcessing = false }) {
         })();
     }, [apiKey]);
 
-    // Selected item from hash
+    // Selected item — check for special sedan/suv first
     const selectedItem = useMemo(() => {
+        const specialVehicle = getSpecialVehiclePrice(slugFromHash);
+        if (specialVehicle) {
+            return specialVehicle;
+        }
+
         if (!items.length) return null;
 
         if (slugFromHash) {
@@ -117,20 +149,22 @@ export default function Membership({ onEnsureCustomer, isProcessing = false }) {
     useEffect(() => {
         if (selectedItem) {
             localStorage.setItem("selectedPackageInfo", JSON.stringify({
-                type: selectedItem.membershipId ? "membership" : "washbook",
-                id: selectedItem.membershipId || selectedItem.washbookId,
-                name: selectedItem.membershipName || selectedItem.washbookName,
-                price: selectedItem.membershipPrice || selectedItem.washbookPrice
+                type: selectedItem.membershipId?.includes("special")
+                    ? selectedItem.slug
+                    : (selectedItem.membershipId ? "membership" : "washbook"),
+                id: selectedItem.membershipId || selectedItem.washbookId || selectedItem.slug,
+                name: selectedItem.membershipName || selectedItem.washbookName || selectedItem.slug,
+                price: selectedItem.membershipPrice || selectedItem.washbookPrice || 0
             }));
         }
     }, [selectedItem]);
 
     // Totals
     const fallbackSubtotal = getItemPrice(selectedItem);
-    const subtotal = selectedAddOns.reduce((total, addOn) => total + addOn.price, fallbackSubtotal); // Updated subtotal to include add-ons
+    const subtotal = selectedAddOns.reduce((total, addOn) => total + addOn.price, fallbackSubtotal);
     const discounts = serverTotals?.discounts ?? 0;
     const tax = serverTotals?.tax ?? 0;
-    const total = serverTotals?.totalAmount ?? Math.max(subtotal - discounts + tax, 0); // Updated total
+    const total = serverTotals?.totalAmount ?? Math.max(subtotal - discounts + tax, 0);
 
     // Add-on buttons for sedan or suv
     const availableAddOns = [
@@ -144,7 +178,6 @@ export default function Membership({ onEnsureCustomer, isProcessing = false }) {
 
     const handleAddOnClick = (addOn) => {
         setSelectedAddOns((prev) => {
-            // If the add-on is already selected, remove it; otherwise, add it
             const exists = prev.find((item) => item.name === addOn.name);
             if (exists) {
                 return prev.filter((item) => item.name !== addOn.name);
@@ -260,9 +293,9 @@ export default function Membership({ onEnsureCustomer, isProcessing = false }) {
                 </div>
             )}
 
-            {/* Add-on buttons for available packages */}
-            {(slugFromHash === "sedan" || slugFromHash === "suv") && <p className="relative text-md font-bold left-2.5">Add Ons:</p>}
-            {(slugFromHash === "sedan" || slugFromHash === "suv") && (
+            {/* Add-on buttons for sedan or suv */}
+            {/* {(slugFromHash === "sedan" || slugFromHash.startsWith("sedan-") || slugFromHash === "suv" || slugFromHash.startsWith("suv-")) && <p className="relative text-md font-bold left-2.5">Add Ons:</p>}
+            {(slugFromHash === "sedan" || slugFromHash.startsWith("sedan-") || slugFromHash === "suv" || slugFromHash.startsWith("suv-")) && (
                 <div className="button-container mb-6">
                     {availableAddOns.map((addOn) => (
                         <button
@@ -277,7 +310,7 @@ export default function Membership({ onEnsureCustomer, isProcessing = false }) {
                         </button>
                     ))}
                 </div>
-            )}
+            )} */}
 
             <PurchaseSummary
                 selectedPackage={selectedItem}
