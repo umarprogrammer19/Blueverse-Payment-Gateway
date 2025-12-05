@@ -71,7 +71,7 @@ export default function PaymentSuccess() {
                     state: info.state, // Assuming 'state' from info
                 };
 
-                const createCustomerRes = await fetch(`${base}/api/customers/create`, {
+                const createCustomerRes = await fetch(`${base}/api/customer`, {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
