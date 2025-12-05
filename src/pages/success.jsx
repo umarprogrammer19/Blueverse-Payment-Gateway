@@ -61,15 +61,30 @@ export default function PaymentSuccess() {
                 const createCustomerPayload = {
                     key: key,
                     siteId: siteId || "",
-                    createCustomerDto: {
-                        firstName: info.firstName,
-                        lastName: info.lastName,
-                        email: info.email,
-                        phoneNumber: info.phone, // Assuming 'phone' from info is phoneNumber
-                        licencePlateNumber: licencePlateNumber,
-                        address: info.address,
-                        state: info.state, // Assuming 'state' from info
-                    },
+                    address: info.address || "",
+                    allowInvoicing: false,
+                    blackList: false,
+                    ccNumber: "",
+                    ccToken: "",
+                    ccType: "",
+                    cityId: "",
+                    dateOfBirth: null,
+                    emailId: info.email || "",
+                    expiryMonth: "",
+                    expiryYear: "",
+                    firstName: info.firstName || "",
+                    isActive: true,
+                    isCardOnFile: false,
+                    isSendEmail: false,
+                    isSendText: false,
+                    isTcpaEnabled: false,
+                    lastName: info.lastName || "",
+                    loyaltyPoints: "",
+                    nameOnCard: "",
+                    phone: info.phone || "",
+                    recurringData: "",
+                    stateId: info.state || "",
+                    zipCode: "",
                 };
 
                 const createCustomerRes = await fetch(`${base}/api/customer`, {
