@@ -94,7 +94,7 @@ export default function PurchaseSummary({
             timezone,
             txndatetime,
             storename: storeName,
-            chargetotal: chargeTotal,
+            chargetotal: 2,
             currency,
             paymentMethod,
             oid,
