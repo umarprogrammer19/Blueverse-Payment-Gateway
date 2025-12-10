@@ -294,7 +294,7 @@ export default function PaymentSuccess() {
                         discounts: Number(discounts),
                         state: info.state,
                     };
-
+                    // Invoice
                     const createInvoiceRes = await fetch(`https://blueverse.projectsutility.com/api/invoices/create`, {
                         method: "POST",
                         headers: {
