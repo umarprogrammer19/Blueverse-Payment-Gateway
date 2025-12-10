@@ -201,6 +201,8 @@ export default function PaymentSuccess() {
                     }
 
                     vehicleId = vehicleData.data || vehicleData.vehicleId || null;
+                    const transactionId = params.get("transactionId"); // Already retrieved earlier in useEffect
+                    const discounts = localStorage.getItem("checkoutDiscounts") || 0; // Retrieved from localStorage
 
                     const createInvoice = await fetch(`https://blueverse.projectsutility.com/api/invoices/create`, {
                         method: "POST",
@@ -210,14 +212,14 @@ export default function PaymentSuccess() {
                         body: JSON.stringify({
                             customer: newCustomerId,
                             serviceDetails: {
-                                id: "2",
-                                serviceName: "Ultimate 9 Car Wash",
-                                price: 175.00,
-                                type: "Washbook"
+                                id: pkg.id,
+                                serviceName: pkg.name,
+                                price: pkg.price,
+                                type: pkg.type,
                             },
-                            transactionId: "19909276798",
-                            discounts: 5.00,
-                            state: "Al Quoz"
+                            transactionId: transactionId,
+                            discounts: Number(discounts),
+                            state: info.state,
                         }),
                     });
 
@@ -281,12 +283,12 @@ export default function PaymentSuccess() {
                     const discounts = localStorage.getItem("checkoutDiscounts") || 0; // Retrieved from localStorage
 
                     const createInvoicePayload = {
-                        customer: customerId,
+                        customer: newCustomerId,
                         serviceDetails: {
-                            id: pkg.id, // washbook id
-                            serviceName: pkg.name, // Assuming pkg has a name field
-                            price: pkg.price, // Assuming pkg has a price field
-                            type: "Washbook", // As per user request
+                            id: pkg.id,
+                            serviceName: pkg.name,
+                            price: pkg.price,
+                            type: pkg.type,
                         },
                         transactionId: transactionId,
                         discounts: Number(discounts),
