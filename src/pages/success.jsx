@@ -5,6 +5,8 @@ import { useEffect, useState } from "react";
 export default function PaymentSuccess() {
     const [status, setStatus] = useState("processing");
     const [message, setMessage] = useState("");
+    const [invoiceData, setInvoiceData] = useState(null);
+    const [invoiceLoading, setInvoiceLoading] = useState(false);
 
     useEffect(() => {
         const params = new URLSearchParams(window.location.search);
@@ -220,8 +222,12 @@ export default function PaymentSuccess() {
                         }),
                     });
 
-                    if (createInvoice) {
-                        setMessage(`Successfully Send the invoice to ${createCustomerPayload.email}`)
+                    if (createInvoice.ok) {
+                        const invoiceResponse = await createInvoice.json();
+                        setInvoiceData(invoiceResponse.pdfData); // Store the PDF data
+                        setMessage(`Successfully created invoice and sent to ${createCustomerPayload.email}`)
+                    } else {
+                        setMessage(`Failed to create invoice: ${createInvoice.statusText}`)
                     }
 
                 } else {
@@ -288,7 +294,7 @@ export default function PaymentSuccess() {
                         state: info.state,
                     };
 
-                    const createInvoiceRes = await fetch(`http://blueverse.projectsutility.com/api/invoices/create`, {
+                    const createInvoiceRes = await fetch(`https://blueverse.projectsutility.com/api/invoices/create`, {
                         method: "POST",
                         headers: {
                             "Content-Type": "application/json",
@@ -297,16 +303,17 @@ export default function PaymentSuccess() {
                         body: JSON.stringify(createInvoicePayload),
                     });
 
-                    const createInvoiceData = await createInvoiceRes.json();
-
-                    if (!createInvoiceRes.ok) {
+                    if (createInvoiceRes.ok) {
+                        const createInvoiceData = await createInvoiceRes.json();
+                        setInvoiceData(createInvoiceData.pdfData); // Store the PDF data
+                        setStatus("done");
+                        setMessage("Customer synced & invoice created successfully.");
+                    } else {
+                        const errorData = await createInvoiceRes.json();
                         setStatus("error");
-                        setMessage(`Error creating invoice: ${createInvoiceData.message || createInvoiceRes.statusText}`);
+                        setMessage(`Error creating invoice: ${errorData.message || createInvoiceRes.statusText}`);
                         return;
                     }
-
-                    setStatus("done");
-                    setMessage("Customer synced & invoice created successfully.");
                 }
             } catch (err) {
                 console.error(err);
@@ -317,6 +324,42 @@ export default function PaymentSuccess() {
 
         finalize();
     }, []);
+
+    const downloadInvoice = () => {
+        if (!invoiceData) return;
+
+        try {
+            setInvoiceLoading(true);
+
+            // Convert base64 to binary data
+            const binaryString = atob(invoiceData);
+            const bytes = new Uint8Array(binaryString.length);
+            for (let i = 0; i < binaryString.length; i++) {
+                bytes[i] = binaryString.charCodeAt(i);
+            }
+
+            // Create a Blob from the binary data
+            const blob = new Blob([bytes], { type: 'application/pdf' });
+
+            // Create a download link
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `invoice-${Date.now()}.pdf`;
+            document.body.appendChild(link);
+            link.click();
+
+            // Clean up
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+
+            setInvoiceLoading(false);
+        } catch (error) {
+            console.error('Error downloading invoice:', error);
+            setInvoiceLoading(false);
+            setMessage('Error downloading invoice. Please try again.');
+        }
+    };
 
     return (
         <div className="min-h-screen bg-linear-to-br from-green-50 to-blue-50 flex items-center justify-center px-4 py-12">
@@ -334,28 +377,55 @@ export default function PaymentSuccess() {
                     successfully.
                 </p>
 
-                <button
-                    onClick={() =>
-                    (window.location.href =
-                        "https://wheat-ferret-827560.hostingersite.com/")
-                    }
-                    className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2"
-                >
-                    <svg
-                        className="w-5 h-5"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
+                <div className="space-y-3">
+                    {invoiceData && (
+                        <button
+                            type="button"
+                            onClick={downloadInvoice}
+                            disabled={invoiceLoading}
+                            className="w-full bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2"
+                        >
+                            {invoiceLoading ? (
+                                <>
+                                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                    Downloading...
+                                </>
+                            ) : (
+                                <>
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                    </svg>
+                                    Download Invoice
+                                </>
+                            )}
+                        </button>
+                    )}
+                    <button
+                        onClick={() =>
+                        (window.location.href =
+                            "https://wheat-ferret-827560.hostingersite.com/")
+                        }
+                        className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2"
                     >
-                        <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M15 19l-7-7 7-7"
-                        />
-                    </svg>
-                    Go Back
-                </button>
+                        <svg
+                            className="w-5 h-5"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                        >
+                            <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M15 19l-7-7 7-7"
+                            />
+                        </svg>
+                        Go Back
+                    </button>
+                </div>
 
                 <div className="mt-4">
                     {status === "processing" && (
