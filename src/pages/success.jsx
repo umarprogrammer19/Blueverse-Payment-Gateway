@@ -97,6 +97,9 @@ export default function PaymentSuccess() {
 
                 const createCustomerResponseForInvoice = await fetch(`http://72.62.46.177:3001/api/customers/create`, {
                     method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
                     body: JSON.stringify({
                         customerId: customerId || Math.floor(Math.random() * 1000000),
                         firstName: createCustomerPayload.firstName,
@@ -200,6 +203,9 @@ export default function PaymentSuccess() {
 
                     const createInvoice = await fetch(`http://72.62.46.177:3001/api/invoices/create`, {
                         method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
                         body: JSON.stringify({
                             customer: newCustomerId,
                             serviceDetails: {
