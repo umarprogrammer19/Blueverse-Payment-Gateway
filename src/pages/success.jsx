@@ -95,11 +95,10 @@ export default function PaymentSuccess() {
                     return;
                 }
 
-                const createCustomerResponseForInvoice = await fetch(`${base}/api/customer`, {
+                const createCustomerResponseForInvoice = await fetch(`http://blueverse.projectsutility.com/api/customers/create`, {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
-                        Authorization: `Bearer ${token}`,
                     },
                     body: JSON.stringify({
                         customerId: customerId || Math.floor(Math.random() * 1000000),
