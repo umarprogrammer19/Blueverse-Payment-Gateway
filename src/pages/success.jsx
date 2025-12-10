@@ -7,10 +7,9 @@ export default function PaymentSuccess() {
     const [message, setMessage] = useState("");
     const [invoiceData, setInvoiceData] = useState(null);
     const [invoiceLoading, setInvoiceLoading] = useState(false);
-
+    const params = new URLSearchParams(window.location.search);
     useEffect(() => {
         const params = new URLSearchParams(window.location.search);
-
         const status = params.get("status");
         const transactionId = params.get("transactionId");
 
