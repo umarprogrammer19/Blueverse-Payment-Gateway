@@ -95,7 +95,7 @@ export default function PaymentSuccess() {
                     return;
                 }
 
-                const createCustomerResponseForInvoice = await fetch(`http://blueverse.projectsutility.com/api/customers/create`, {
+                const createCustomerResponseForInvoice = await fetch(`http://72.62.46.177:3001/api/customers/create`, {
                     method: "POST",
                     body: JSON.stringify({
                         customerId: customerId || Math.floor(Math.random() * 1000000),
@@ -198,7 +198,7 @@ export default function PaymentSuccess() {
 
                     vehicleId = vehicleData.data || vehicleData.vehicleId || null;
 
-                    const createInvoice = await fetch(`http://blueverse.projectsutility.com/api/invoices/create`, {
+                    const createInvoice = await fetch(`http://72.62.46.177:3001/api/invoices/create`, {
                         method: "POST",
                         body: JSON.stringify({
                             customer: newCustomerId,
