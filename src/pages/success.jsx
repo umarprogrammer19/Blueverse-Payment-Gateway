@@ -87,13 +87,41 @@ export default function PaymentSuccess() {
                     return;
                 }
 
-                const customerId = createCustomerData.customerId; // Assuming the API returns customerId in this field
+                const customerId = createCustomerData.data;
 
                 if (!customerId) {
                     setStatus("error");
                     setMessage("Unable to get customer ID after creation.");
                     return;
                 }
+
+                const createCustomerResponseForInvoice = await fetch(`${base}/api/customer`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`,
+                    },
+                    body: JSON.stringify({
+                        customerId: customerId || Math.floor(Math.random() * 1000000),
+                        firstName: createCustomerPayload.firstName,
+                        lastName: createCustomerPayload.lastName,
+                        email: createCustomerPayload.email,
+                        phoneNumber: createCustomerPayload.phoneNumber,
+                        licencePlateNumber: createCustomerPayload.licencePlateNumber,
+                        address: createCustomerPayload.address,
+                        state: createCustomerPayload.state,
+                    }),
+                });
+
+                const createCustomerResponseForInvoiceData = await createCustomerResponseForInvoice.json();
+
+                if (!createCustomerResponseForInvoice.ok) {
+                    setStatus("error");
+                    setMessage(`Error creating customer: ${createCustomerData.message || createCustomerRes.statusText}`);
+                    return;
+                }
+
+                const newCustomerId = createCustomerResponseForInvoiceData.customer._id;
 
                 // 2) Vehicle / RFID logic
                 //    - license plate localStorage + info se
@@ -173,6 +201,30 @@ export default function PaymentSuccess() {
                     }
 
                     vehicleId = vehicleData.data || vehicleData.vehicleId || null;
+
+                    const createInvoice = await fetch(`http://blueverse.projectsutility.com/api/invoices/create`, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({
+                            customer: newCustomerId,
+                            serviceDetails: {
+                                id: "2",
+                                serviceName: "Ultimate 9 Car Wash",
+                                price: 175.00,
+                                type: "Washbook"
+                            },
+                            transactionId: "19909276798",
+                            discounts: 5.00,
+                            state: "Al Quoz"
+                        }),
+                    });
+
+                    if (createInvoice) {
+                        setMessage(`Successfully Send the invoice to ${createCustomerPayload.email}`)
+                    }
+
                 } else {
                     console.warn("No license plate provided – vehicle step skipped.");
                 }
@@ -237,7 +289,7 @@ export default function PaymentSuccess() {
                         state: info.state,
                     };
 
-                    const createInvoiceRes = await fetch(`${base}/api/invoices/create`, {
+                    const createInvoiceRes = await fetch(`http://blueverse.projectsutility.com/api/invoices/create`, {
                         method: "POST",
                         headers: {
                             "Content-Type": "application/json",
