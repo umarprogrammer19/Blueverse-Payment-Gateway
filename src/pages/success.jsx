@@ -445,12 +445,12 @@ export default function PaymentSuccess() {
                         </p>
                     )}
 
-                    {status === "error" && (
+                    {/* {status === "error" && (
                         <p className="text-red-600">
                             {message ||
                                 "Payment succeeded, but something went wrong while saving your details."}
                         </p>
-                    )}
+                    )} */}
                 </div>
             </div>
         </div>

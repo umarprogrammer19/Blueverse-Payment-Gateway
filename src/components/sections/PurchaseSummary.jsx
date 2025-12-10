@@ -7,8 +7,8 @@ export default function PurchaseSummary({
     selectedPackage,
     subtotal = 0,
     discounts = 0,
-    tax = 0, 
-    total = 0, 
+    tax = 0,
+    total = 0,
     couponCode,
     onCouponChange,
     onApplyCoupon,
@@ -93,7 +93,7 @@ export default function PurchaseSummary({
             timezone,
             txndatetime,
             storename: storeName,
-            chargetotal: 2,
+            chargetotal: chargeTotal,
             currency,
             paymentMethod,
             oid,
@@ -232,48 +232,48 @@ export default function PurchaseSummary({
     return (
         <div className="space-y-6">
             {/* Mobile: Coupon Code Accordion */}
-           <div className="border border-gray-200 rounded-lg md:hidden">
-  <button
-    type="button"
-    onClick={() => setCouponAccordionOpen((prev) => !prev)}
-    className="w-full flex items-center justify-between px-4 py-3 text-md font-medium text-gray-700"
-  >
-    <span>Discounts</span>
-    <span className={`transform transition-transform ${couponAccordionOpen ? "rotate-180" : ""}`}>
-      <ChevronUp />
-    </span>
-  </button>
+            <div className="border border-gray-200 rounded-lg md:hidden">
+                <button
+                    type="button"
+                    onClick={() => setCouponAccordionOpen((prev) => !prev)}
+                    className="w-full flex items-center justify-between px-4 py-3 text-md font-medium text-gray-700"
+                >
+                    <span>Discounts</span>
+                    <span className={`transform transition-transform ${couponAccordionOpen ? "rotate-180" : ""}`}>
+                        <ChevronUp />
+                    </span>
+                </button>
 
-  {couponAccordionOpen && (
-    <div className="px-4 pb-4 pt-1 space-y-4">
-      <div>
-        {/* stay in one row */}
-        <div className="flex gap-2 items-start">
-          <input
-            type="text"
-            name="couponCode"
-            placeholder="Enter code"
-            value={couponCode}
-            onChange={onCouponChange}
-            className="flex-1 min-w-0 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
-          />
+                {couponAccordionOpen && (
+                    <div className="px-4 pb-4 pt-1 space-y-4">
+                        <div>
+                            {/* stay in one row */}
+                            <div className="flex gap-2 items-start">
+                                <input
+                                    type="text"
+                                    name="couponCode"
+                                    placeholder="Enter code"
+                                    value={couponCode}
+                                    onChange={onCouponChange}
+                                    className="flex-1 min-w-0 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                                />
 
-          <button
-            onClick={handleApplyCouponClick}
-            type="button"
-            className="shrink-0 px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white font-medium rounded-lg transition-colors"
-          >
-            Apply
-          </button>
-        </div>
+                                <button
+                                    onClick={handleApplyCouponClick}
+                                    type="button"
+                                    className="shrink-0 px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white font-medium rounded-lg transition-colors"
+                                >
+                                    Apply
+                                </button>
+                            </div>
 
-        {couponError && (
-          <p className="mt-1 text-sm text-red-600">{couponError}</p>
-        )}
-      </div>
-    </div>
-  )}
-</div>
+                            {couponError && (
+                                <p className="mt-1 text-sm text-red-600">{couponError}</p>
+                            )}
+                        </div>
+                    </div>
+                )}
+            </div>
 
 
             {/* Mobile: Details Accordion (no total inside) */}
