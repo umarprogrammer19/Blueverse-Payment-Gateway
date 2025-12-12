@@ -110,7 +110,7 @@ export default function Membership({ onEnsureCustomer, isProcessing = false }) {
                 );
 
                 const withSlugs = merged.map((item) => {
-                    const name = item.membershipName || item.washbookName || "";
+                    const name = item.membershipName || item.washbookName;
                     return {
                         ...item,
                         slug: slugify(name),
