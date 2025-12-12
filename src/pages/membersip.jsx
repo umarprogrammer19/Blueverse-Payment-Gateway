@@ -82,7 +82,7 @@ export default function Membership({ onEnsureCustomer, isProcessing = false }) {
                 const token = localStorage.getItem("accessToken");
                 const key = apiKey || localStorage.getItem("apiKey") || "";
 
-                const urlWashbook = `${base}/api/washbook?key=${encodeURIComponent(key)}`;
+                const urlWashbook = `${base}/api/washbook?key=${encodeURIComponent(key)}&pageSize=10000&target=table&type=0&isActive=true`;
                 const urlMembership = `${base}/api/membership?key=${encodeURIComponent(key)}&pageSize=10000&target=table&type=0&isActive=true`;
 
                 const [resWash, resMem] = await Promise.all([
