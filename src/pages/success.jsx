@@ -362,6 +362,59 @@ export default function PaymentSuccess() {
         }
     };
 
+    const printInvoice = () => {
+        if (!invoiceData) return;
+
+        try {
+            setInvoiceLoading(true);
+
+            const binaryString = atob(invoiceData);
+            const bytes = new Uint8Array(binaryString.length);
+            for (let i = 0; i < binaryString.length; i++) {
+                bytes[i] = binaryString.charCodeAt(i);
+            }
+
+            const blob = new Blob([bytes], { type: "application/pdf" });
+            const url = URL.createObjectURL(blob);
+
+            const iframe = document.createElement("iframe");
+            iframe.style.position = "fixed";
+            iframe.style.right = "0";
+            iframe.style.bottom = "0";
+            iframe.style.width = "0";
+            iframe.style.height = "0";
+            iframe.style.border = "0";
+            iframe.src = url;
+
+            document.body.appendChild(iframe);
+
+            const cleanup = () => {
+                URL.revokeObjectURL(url);
+                document.body.removeChild(iframe);
+                setInvoiceLoading(false);
+            };
+
+            iframe.onload = () => {
+                // small delay helps Safari/Chrome reliability
+                setTimeout(() => {
+                    iframe.contentWindow?.focus();
+                    iframe.contentWindow?.print();
+                }, 200);
+            };
+
+            // Some browsers support afterprint on the iframe window
+            iframe.contentWindow?.addEventListener?.("afterprint", cleanup);
+
+            // Fallback cleanup (in case afterprint doesn't fire)
+            setTimeout(cleanup, 5000);
+        } catch (error) {
+            console.error("Error printing invoice:", error);
+            setInvoiceLoading(false);
+            setMessage("Error printing receipt. Please try again.");
+        }
+    };
+
+
     return (
         <div className="min-h-screen bg-linear-to-br from-green-50 to-blue-50 flex items-center justify-center px-4 py-12">
             <div className="max-w-md w-full bg-white rounded-xl shadow-lg p-8 text-center">
@@ -411,6 +464,16 @@ export default function PaymentSuccess() {
                                     Download Receipt
                                 </>
                             )}
+                        </button>
+                    )}
+                    {invoiceData && (
+                        <button
+                            type="button"
+                            onClick={printInvoice}
+                            disabled={invoiceLoading}
+                            className="w-full bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white font-semibold py-3 px-6 rounded-lg"
+                        >
+                            {invoiceLoading ? "Preparing..." : "Print Receipt"}
                         </button>
                     )}
                     <button
