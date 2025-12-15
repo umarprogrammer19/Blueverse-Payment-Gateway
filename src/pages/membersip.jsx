@@ -101,7 +101,6 @@ export default function Membership({ onEnsureCustomer, isProcessing = false }) {
                         },
                     }),
                 ]);
-
                 const dataWash = await resWash.json();
                 const dataMem = await resMem.json();
 
@@ -116,7 +115,6 @@ export default function Membership({ onEnsureCustomer, isProcessing = false }) {
                         slug: slugify(name),
                     };
                 });
-
                 setItems(withSlugs);
             } catch (e) {
                 console.error("Membership fetch error:", e);
@@ -136,22 +134,24 @@ export default function Membership({ onEnsureCustomer, isProcessing = false }) {
         if (!items.length) return null;
 
         if (slugFromHash) {
+            console.log(slugFromHash);
             const bySlug = items.find((i) => i.slug === slugFromHash);
+            console.log(bySlug);
             if (bySlug) return bySlug;
         }
 
         const firstMembership = items.find((i) =>
             /membership/i.test(i.membershipName || "")
         );
+        console.log(firstMembership);
+
         return firstMembership || items[0] || null;
     }, [items, slugFromHash]);
 
     useEffect(() => {
         if (selectedItem) {
             localStorage.setItem("selectedPackageInfo", JSON.stringify({
-                type: selectedItem.membershipId?.includes("special")
-                    ? selectedItem.slug
-                    : (selectedItem.membershipId ? "membership" : "washbook"),
+                type: (selectedItem.membershipId ? "membership" : "washbook"),
                 id: selectedItem.membershipId || selectedItem.washbookId || selectedItem.slug,
                 name: selectedItem.membershipName || selectedItem.washbookName || selectedItem.slug,
                 price: selectedItem.membershipPrice || selectedItem.washbookPrice || 0
@@ -165,27 +165,6 @@ export default function Membership({ onEnsureCustomer, isProcessing = false }) {
     const discounts = serverTotals?.discounts ?? 0;
     const tax = serverTotals?.tax ?? 0;
     const total = serverTotals?.totalAmount ?? Math.max(subtotal - discounts + tax, 0);
-
-    // Add-on buttons for sedan or suv
-    const availableAddOns = [
-        { name: "Engine Bay Cleaning", price: 50 },
-        { name: "Undercarriage Flush", price: 30 },
-        { name: "Pet Hair Removal", price: 50 },
-        { name: "Deep Undercarriage Clean", price: 60 },
-        { name: "Seat Shampoo", price: 40 },
-        { name: "Leather Clean & Condition", price: 50 },
-    ];
-
-    const handleAddOnClick = (addOn) => {
-        setSelectedAddOns((prev) => {
-            const exists = prev.find((item) => item.name === addOn.name);
-            if (exists) {
-                return prev.filter((item) => item.name !== addOn.name);
-            } else {
-                return [...prev, addOn];
-            }
-        });
-    };
 
     const handleApplyCoupon = async () => {
         const promo = couponCode.trim().toUpperCase();
