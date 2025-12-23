@@ -17,7 +17,8 @@ export default function CarInfo({ formData, onChange }) {
 
     useEffect(() => {
         onChange({
-            target: {
+            target:
+            {
                 name: 'country',
                 value: selectedCountry,
             },
@@ -126,6 +127,8 @@ export default function CarInfo({ formData, onChange }) {
                             value={selectedCountry}
                             onChange={handleCountryChange}
                             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2162AF] focus:border-[#2162AF] transition-colors"
+                            required
+                            aria-required="true"
                         >
                             <option value="">Select</option>
                             {countriesToDisplay.map((country) => (
@@ -147,6 +150,8 @@ export default function CarInfo({ formData, onChange }) {
                                 onChange={handleAlphabeticPartChange}
                                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2162AF] focus:border-[#2162AF] transition-colors"
                                 maxLength="3"
+                                required
+                                aria-required="true"
                             />
                             <input
                                 type="number"
@@ -155,6 +160,8 @@ export default function CarInfo({ formData, onChange }) {
                                 value={numericPart}
                                 onChange={handleNumericPartChange}
                                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2162AF] focus:border-[#2162AF] transition-colors"
+                                required
+                                aria-required="true"
                             />
                         </div>
                     </div>

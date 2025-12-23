@@ -184,6 +184,12 @@ function App() {
       return false;
     }
 
+    // Ensure license plate is provided (both alphabetic and numeric parts)
+    if (!formData.alphabeticPart || !formData.alphabeticPart.trim() || !formData.numericPart || !formData.numericPart.trim()) {
+      setError("Please fill the license plate fields.");
+      return false;
+    }
+
     try {
       setLoading(true);
       setError("");
