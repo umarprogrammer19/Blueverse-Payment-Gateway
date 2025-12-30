@@ -351,7 +351,7 @@ export default function PurchaseSummary({
                 />
                 <label htmlFor="terms" className="text-sm text-gray-600">
                     I agree to the{" "}
-                    <a href="#" className="text-blue-600 hover:underline">
+                    <a href="https://blueverse.ae/terms-conditions/" className="text-blue-600 hover:underline">
                         Terms of Service
                     </a>
                 </label>
