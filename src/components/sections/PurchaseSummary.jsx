@@ -42,7 +42,7 @@ export default function PurchaseSummary({
     const [couponError, setCouponError] = useState("");
     const [termsAccepted, setTermsAccepted] = useState(false);
     const [detailsOpen, setDetailsOpen] = useState(false); // mobile details accordion
-    const [couponAccordionOpen, setCouponAccordionOpen] = useState(false); // mobile coupon accordion
+    const [couponAccordionOpen, setCouponAccordionOpen] = useState(false); 
 
     // Save oid to localStorage
     useEffect(() => {
