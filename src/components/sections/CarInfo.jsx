@@ -1,11 +1,18 @@
 import { useEffect, useState } from 'react';
 
+/**
+ * Car information component for collecting vehicle license plate details
+ * @param {Object} formData - Form data containing car information
+ * @param {Function} onChange - Handler for form input changes
+ */
 export default function CarInfo({ formData, onChange }) {
-    const [selectedRegion, setSelectedRegion] = useState(formData.region || 'Emirates');
-    const [selectedCountry, setSelectedCountry] = useState(formData.country || (formData.region === 'Emirates' ? 'Dubai' : ''));
-    const [alphabeticPart, setAlphabeticPart] = useState(formData.alphabeticPart || '');
-    const [numericPart, setNumericPart] = useState(formData.numericPart || '');
+    // State variables for car information
+    const [selectedRegion, setSelectedRegion] = useState(formData.region || 'Emirates'); // Selected region (Emirates or GCC)
+    const [selectedCountry, setSelectedCountry] = useState(formData.country || (formData.region === 'Emirates' ? 'Dubai' : '')); // Selected country/emirate
+    const [alphabeticPart, setAlphabeticPart] = useState(formData.alphabeticPart || ''); // Alphabetic part of license plate
+    const [numericPart, setNumericPart] = useState(formData.numericPart || ''); // Numeric part of license plate
 
+    // Effects to sync state changes with parent form
     useEffect(() => {
         onChange({
             target: {
@@ -42,6 +49,10 @@ export default function CarInfo({ formData, onChange }) {
         });
     }, [numericPart]);
 
+    /**
+     * Handles region selection changes
+     * Resets country and license plate parts when region changes
+     */
     const handleRegionChange = (e) => {
         const value = e.target.value;
         setSelectedRegion(value);
@@ -50,18 +61,29 @@ export default function CarInfo({ formData, onChange }) {
         setNumericPart('');
     };
 
+    /**
+     * Handles country selection changes
+     */
     const handleCountryChange = (e) => {
         setSelectedCountry(e.target.value);
     };
 
+    /**
+     * Handles alphabetic part of license plate changes
+     * Converts input to uppercase
+     */
     const handleAlphabeticPartChange = (e) => {
         setAlphabeticPart(e.target.value.toUpperCase());
     };
 
+    /**
+     * Handles numeric part of license plate changes
+     */
     const handleNumericPartChange = (e) => {
         setNumericPart(e.target.value);
     };
 
+    // Countries for UAE Emirates region
     const emiratesCountries = [
         'Abu Dhabi',
         'Ajman',
@@ -72,6 +94,7 @@ export default function CarInfo({ formData, onChange }) {
         'Umm Al Quwain',
     ];
 
+    // Countries for GCC region
     const gccCountries = [
         'KSA',
         'Bahrain',
@@ -81,6 +104,7 @@ export default function CarInfo({ formData, onChange }) {
         'United Arab Emirates',
     ];
 
+    // Determine which countries to display based on selected region
     const countriesToDisplay = selectedRegion === 'Emirates' ? emiratesCountries : gccCountries;
 
 

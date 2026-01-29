@@ -1,6 +1,8 @@
 import { XCircleIcon } from "@heroicons/react/24/outline";
 
-// Payment Failed Function
+/**
+ * Payment failure page component that displays when a transaction fails
+ */
 export default function PaymentFailure() {
     return (
         <div className="min-h-screen bg-linear-to-br from-red-50 to-pink-50 flex items-center justify-center px-4 py-12">
@@ -18,7 +20,7 @@ export default function PaymentFailure() {
                     We're sorry, but your transaction could not be processed at this time. Please try again or contact support if the issue persists.
                 </p>
 
-                {/* Back Button */}
+                {/* Back Button - Redirects to home page */}
                 <button
                     onClick={() => window.location.href = "https://wheat-ferret-827560.hostingersite.com/"}
                     className="w-full bg-gray-600 hover:bg-gray-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2"
@@ -36,7 +38,7 @@ export default function PaymentFailure() {
                             d="M15 19l-7-7 7-7"
                         />
                     </svg>
-                    Go Back 
+                    Go Back
                 </button>
             </div>
         </div>

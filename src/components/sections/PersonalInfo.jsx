@@ -1,5 +1,11 @@
 import CarInfo from "./CarInfo";
 
+/**
+ * Personal information form component that collects customer details
+ * @param {Object} formData - Form data containing customer information
+ * @param {Function} onChange - Handler for form input changes
+ * @param {Array} siteData - Available sites data
+ */
 export default function PersonalInfo({ formData, onChange, siteData }) {
     return (
         <div className="max-w-4xl mx-auto p-4 bg-white rounded-2xl shadow-sm border border-gray-200">
@@ -80,6 +86,7 @@ export default function PersonalInfo({ formData, onChange, siteData }) {
                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2162AF] focus:border-[#2162AF] transition-colors"
                     />
                 </div>
+                {/* Car information component */}
                 <CarInfo formData={formData} onChange={onChange} siteData={siteData} />
                 <div className="md:col-span-2">
                     <label
