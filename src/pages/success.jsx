@@ -1,24 +1,32 @@
 import { CheckCircleIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 
-// Payment Success
+/**
+ * Payment success page that handles post-payment processing
+ * Creates customer records, assigns memberships, and generates invoices
+ */
 export default function PaymentSuccess() {
-    const [status, setStatus] = useState("processing");
-    const [message, setMessage] = useState("");
-    const [invoiceData, setInvoiceData] = useState(null);
-    const [invoiceLoading, setInvoiceLoading] = useState(false);
-    const params = new URLSearchParams(window.location.search);
+    // State variables for UI feedback
+    const [status, setStatus] = useState("processing"); // Current processing status
+    const [message, setMessage] = useState("");        // Status message to display
+    const [invoiceData, setInvoiceData] = useState(null); // PDF data for invoice
+    const [invoiceLoading, setInvoiceLoading] = useState(false); // Loading state for invoice actions
+    const params = new URLSearchParams(window.location.search); // Query parameters from URL
+
+    // Effect to handle payment verification from URL parameters
     useEffect(() => {
         const params = new URLSearchParams(window.location.search);
         const status = params.get("status");
         const transactionId = params.get("transactionId");
 
+        // Validate payment status
         if (status !== "success") {
             setStatus("error");
             setMessage("Payment failed or invalid response.");
             return;
         }
 
+        // Store transaction ID in localStorage
         if (transactionId) {
             localStorage.setItem("ipgTransactionId", transactionId);
         }
@@ -27,9 +35,11 @@ export default function PaymentSuccess() {
         setMessage(`Payment Verified. Transaction ID: ${transactionId}`);
     }, []);
 
+    // Effect to finalize payment by creating customer records and assigning services
     useEffect(() => {
         const finalize = async () => {
             try {
+                // Retrieve customer and package information from localStorage
                 const info = JSON.parse(
                     localStorage.getItem("checkoutCustomerInfo") || "{}"
                 );
@@ -40,6 +50,7 @@ export default function PaymentSuccess() {
 
                 const siteId = localStorage.getItem("siteId");
 
+                // Validate customer information exists
                 if (!info.email) {
                     setStatus("error");
                     setMessage("No saved customer details found.");
@@ -50,13 +61,14 @@ export default function PaymentSuccess() {
                 const key = localStorage.getItem("apiKey");
                 const token = localStorage.getItem("accessToken");
 
+                // Validate authentication credentials
                 if (!key || !token) {
                     setStatus("error");
                     setMessage("Missing API key or token.");
                     return;
                 }
 
-                // 1) Customer create
+                // Step 1: Create customer record in primary API
                 const licencePlateNumber = localStorage.getItem("licensePlate") || "";
 
                 const createCustomerPayload = {
@@ -75,7 +87,7 @@ export default function PaymentSuccess() {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
-                        Authorization: `Bearer ${token}`,
+                        Authorization: `Bearer ${token}`, // Include auth token
                     },
                     body: JSON.stringify(createCustomerPayload),
                 });
@@ -96,6 +108,7 @@ export default function PaymentSuccess() {
                     return;
                 }
 
+                // Step 2: Create customer record in secondary system (projectsutility.com)
                 const createCustomerResponseForInvoice = await fetch(`https://blueverse.projectsutility.com/api/customers/create`, {
                     method: "POST",
                     headers: {
@@ -123,22 +136,23 @@ export default function PaymentSuccess() {
 
                 const newCustomerId = createCustomerResponseForInvoiceData.customer._id;
 
-                // 2) Vehicle / RFID logic
-                //    - license plate localStorage + info se
-                //    - RFID exist ho to error
-                //    - warna naya vehicle POST, jis se vehicleId milega
+                // Step 2: Handle vehicle registration and RFID assignment
+                //    - Get license plate from localStorage or info
+                //    - Check if RFID already exists for this plate
+                //    - Otherwise create new vehicle record with RFID
                 const rawLp =
                     info.licensePlate || localStorage.getItem("licensePlate") || "";
                 const licensePlate = String(rawLp).trim();
                 let vehicleId = null;
 
                 if (licensePlate) {
+                    // Check if vehicle already exists with this license plate
                     const vehiclesRes = await fetch(
                         `${base}/api/vehicle?key=${key}&customerId=${customerId}&pageSize=999999`,
                         {
                             headers: {
                                 "Content-Type": "application/json",
-                                Authorization: `Bearer ${token}`,
+                                Authorization: `Bearer ${token}`, // Include auth token
                             },
                         }
                     );
@@ -148,6 +162,7 @@ export default function PaymentSuccess() {
                         ? vehiclesJson.data
                         : [];
 
+                    // Normalize license plates for comparison
                     const normalize = (val) =>
                         String(val || "").replace(/\s+/g, "").toLowerCase();
                     const lpNorm = normalize(licensePlate);
@@ -156,6 +171,7 @@ export default function PaymentSuccess() {
                         (v) => normalize(v.licensePlate) === lpNorm && v.rfid
                     );
 
+                    // Check if RFID already exists for this license plate
                     if (vehicleWithRFID) {
                         console.warn("RFID already exists for this license plate", {
                             vehicleWithRFID,
@@ -167,7 +183,7 @@ export default function PaymentSuccess() {
                         return;
                     }
 
-                    // naya vehicle create karo (RFID = licensePlate)
+                    // Create new vehicle record with license plate as RFID
                     const vehiclePayload = {
                         color: "",
                         customerId: String(customerId),
@@ -176,7 +192,7 @@ export default function PaymentSuccess() {
                         isBlackListed: false,
                         key,
                         licensePlate,
-                        rfid: licensePlate,
+                        rfid: licensePlate, // Use license plate as RFID
                         specialPricingId: "",
                         vehicleMakeId: "",
                         vehicleModelId: "",
@@ -187,7 +203,7 @@ export default function PaymentSuccess() {
                         method: "POST",
                         headers: {
                             "Content-Type": "application/json",
-                            Authorization: `Bearer ${token}`,
+                            Authorization: `Bearer ${token}`, // Include auth token
                         },
                         body: JSON.stringify(vehiclePayload),
                     });
@@ -201,6 +217,8 @@ export default function PaymentSuccess() {
                     }
 
                     vehicleId = vehicleData.data || vehicleData.vehicleId || null;
+
+                    // Create invoice in secondary system
                     const transactionId = params.get("transactionId"); // Already retrieved earlier in useEffect
                     const discounts = localStorage.getItem("checkoutDiscounts") || 0; // Retrieved from localStorage
 
@@ -237,9 +255,9 @@ export default function PaymentSuccess() {
 
                 const isMembership = pkg.type === "membership";
 
-                // 3) Branch: membership vs washbook
+                // Step 3: Handle membership vs washbook differently
                 if (isMembership) {
-                    // membership = /api/vehicle/assignfreemembership
+                    // For memberships, assign the membership to the vehicle
                     if (!vehicleId) {
                         setStatus("error");
                         setMessage("Unable to resolve vehicle for this membership.");
@@ -259,7 +277,7 @@ export default function PaymentSuccess() {
                             method: "POST",
                             headers: {
                                 "Content-Type": "application/json",
-                                Authorization: `Bearer ${token}`,
+                                Authorization: `Bearer ${token}`, // Include auth token
                             },
                             body: JSON.stringify(assignPayload),
                         }
@@ -278,7 +296,7 @@ export default function PaymentSuccess() {
                         "Customer synced & membership assigned to vehicle successfully."
                     );
                 } else {
-                    // 3) Invoice create
+                    // For washbooks, create invoice in secondary system
                     const transactionId = params.get("transactionId"); // Already retrieved earlier in useEffect
                     const discounts = localStorage.getItem("checkoutDiscounts") || 0; // Retrieved from localStorage
 
@@ -294,12 +312,12 @@ export default function PaymentSuccess() {
                         discounts: Number(discounts),
                         state: info.state,
                     };
-                    // Invoice
+                    // Create invoice
                     const createInvoiceRes = await fetch(`https://blueverse.projectsutility.com/api/invoices/create`, {
                         method: "POST",
                         headers: {
                             "Content-Type": "application/json",
-                            Authorization: `Bearer ${token}`,
+                            Authorization: `Bearer ${token}`, // Include auth token
                         },
                         body: JSON.stringify(createInvoicePayload),
                     });
@@ -323,9 +341,12 @@ export default function PaymentSuccess() {
             }
         };
 
-        finalize();
+        finalize(); // Execute the finalization process
     }, []);
 
+    /**
+     * Downloads the invoice as a PDF file
+     */
     const downloadInvoice = () => {
         if (!invoiceData) return;
 
@@ -362,21 +383,27 @@ export default function PaymentSuccess() {
         }
     };
 
+    /**
+     * Prints the invoice PDF
+     */
     const printInvoice = () => {
         if (!invoiceData) return;
 
         try {
             setInvoiceLoading(true);
 
+            // Convert base64 to binary data
             const binaryString = atob(invoiceData);
             const bytes = new Uint8Array(binaryString.length);
             for (let i = 0; i < binaryString.length; i++) {
                 bytes[i] = binaryString.charCodeAt(i);
             }
 
+            // Create a PDF blob and print via iframe
             const blob = new Blob([bytes], { type: "application/pdf" });
             const url = URL.createObjectURL(blob);
 
+            // Create hidden iframe to print the PDF
             const iframe = document.createElement("iframe");
             iframe.style.position = "fixed";
             iframe.style.right = "0";
@@ -395,7 +422,7 @@ export default function PaymentSuccess() {
             };
 
             iframe.onload = () => {
-                // small delay helps Safari/Chrome reliability
+                // Small delay helps Safari/Chrome reliability
                 setTimeout(() => {
                     iframe.contentWindow?.focus();
                     iframe.contentWindow?.print();
