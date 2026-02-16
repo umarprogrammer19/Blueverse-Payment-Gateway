@@ -192,7 +192,7 @@ export default function PaymentSuccess() {
                         isBlackListed: false,
                         key,
                         licensePlate,
-                        rfid: licensePlate, // Use license plate as RFID
+                        // rfid: licensePlate, // Use license plate as RFID
                         specialPricingId: "",
                         vehicleMakeId: "",
                         vehicleModelId: "",
