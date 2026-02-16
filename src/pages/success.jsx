@@ -224,6 +224,10 @@ export default function PaymentSuccess() {
                             year: "",
                         };
                         console.log("Vehicle Match");
+                    } else {
+                        setStatus("error");
+                        setMessage("Error creating vehicle for this license plate.");
+                        return
                     }
 
                     vehicleRes = await fetch(`${base}/api/vehicle`, {
