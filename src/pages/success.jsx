@@ -209,12 +209,6 @@ export default function PaymentSuccess() {
 
                     const vehicleData = await vehicleRes.json();
 
-                    if (!vehicleRes.ok) {
-                        setStatus("error");
-                        setMessage("Error creating vehicle for this license plate.");
-                        return;
-                    }
-
                     if (vehicleData.message == "License Plate already associated with another user" || vehicleData.errorMessage[0] == "License Plate already associated with another user") {
                         var updatedVehiclePayload = {
                             color: "",
@@ -240,6 +234,13 @@ export default function PaymentSuccess() {
                         },
                         body: JSON.stringify(updatedVehiclePayload),
                     });
+
+
+                    if (!vehicleRes.ok) {
+                        setStatus("error");
+                        setMessage("Error creating vehicle for this license plate.");
+                        return;
+                    }
 
                     vehicleId = vehicleData.data || vehicleData.vehicleId || null;
 
