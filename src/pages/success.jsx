@@ -198,7 +198,7 @@ export default function PaymentSuccess() {
                         year: "",
                     };
 
-                    const vehicleRes = await fetch(`${base}/api/vehicle`, {
+                    let vehicleRes = await fetch(`${base}/api/vehicle`, {
                         method: "POST",
                         headers: {
                             "Content-Type": "application/json",
@@ -214,6 +214,19 @@ export default function PaymentSuccess() {
                         setMessage("Error creating vehicle for this license plate.");
                         return;
                     }
+
+                    if (vehicleData.message == "License Plate already associated with another user" || vehicleData.errorMessage[0] == "License Plate already associated with another user") {
+                        vehiclePayload.licensePlate = licensePlate + String(Math.floor(Math.random() * 100))
+                    }
+
+                    vehicleRes = await fetch(`${base}/api/vehicle`, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            Authorization: `Bearer ${token}`, // Include auth token
+                        },
+                        body: JSON.stringify(vehiclePayload),
+                    });
 
                     vehicleId = vehicleData.data || vehicleData.vehicleId || null;
 
