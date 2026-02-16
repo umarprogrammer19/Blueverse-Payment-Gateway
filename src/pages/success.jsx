@@ -216,7 +216,20 @@ export default function PaymentSuccess() {
                     }
 
                     if (vehicleData.message == "License Plate already associated with another user" || vehicleData.errorMessage[0] == "License Plate already associated with another user") {
-                        vehiclePayload.licensePlate = licensePlate + String(Math.floor(Math.random() * 100))
+                        var updatedVehiclePayload = {
+                            color: "",
+                            customerId: String(customerId),
+                            description: "",
+                            isActive: true,
+                            isBlackListed: false,
+                            key,
+                            licensePlate: licensePlate + String(Math.floor(Math.random() * 100)),
+                            specialPricingId: "",
+                            vehicleMakeId: "",
+                            vehicleModelId: "",
+                            year: "",
+                        };
+                        console.log("Vehicle Match");
                     }
 
                     vehicleRes = await fetch(`${base}/api/vehicle`, {
@@ -225,7 +238,7 @@ export default function PaymentSuccess() {
                             "Content-Type": "application/json",
                             Authorization: `Bearer ${token}`, // Include auth token
                         },
-                        body: JSON.stringify(vehiclePayload),
+                        body: JSON.stringify(updatedVehiclePayload),
                     });
 
                     vehicleId = vehicleData.data || vehicleData.vehicleId || null;
