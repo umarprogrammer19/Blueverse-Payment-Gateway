@@ -192,7 +192,7 @@ export default function PaymentSuccess() {
                         isBlackListed: false,
                         key,
                         licensePlate,
-                        rfid: "", // Use license plate as RFID
+                        rfid: licensePlate + String(Math.floor(Math.random() * 100000)), // Use license plate as RFID
                         specialPricingId: "",
                         vehicleMakeId: "",
                         vehicleModelId: "",
