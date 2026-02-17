@@ -192,14 +192,13 @@ export default function PaymentSuccess() {
                         isBlackListed: false,
                         key,
                         licensePlate,
-                        rfid: licensePlate, // Use license plate as RFID
                         specialPricingId: "",
                         vehicleMakeId: "",
                         vehicleModelId: "",
                         year: "",
                     };
 
-                    const vehicleRes = await fetch(`${base}/api/vehicle`, {
+                    let vehicleRes = await fetch(`${base}/api/vehicle`, {
                         method: "POST",
                         headers: {
                             "Content-Type": "application/json",
@@ -209,6 +208,37 @@ export default function PaymentSuccess() {
                     });
 
                     const vehicleData = await vehicleRes.json();
+
+                    if (vehicleData.message == "License Plate already associated with another user" || vehicleData.errorMessage[0] == "License Plate already associated with another user") {
+                        var updatedVehiclePayload = {
+                            color: "",
+                            customerId: String(customerId),
+                            description: "",
+                            isActive: true,
+                            isBlackListed: false,
+                            key,
+                            licensePlate: licensePlate + String(Math.floor(Math.random() * 100)),
+                            specialPricingId: "",
+                            vehicleMakeId: "",
+                            vehicleModelId: "",
+                            year: "",
+                        };
+                        console.log("Vehicle Match");
+                    } else {
+                        setStatus("error");
+                        setMessage("Error creating vehicle for this license plate.");
+                        return
+                    }
+
+                    vehicleRes = await fetch(`${base}/api/vehicle`, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            Authorization: `Bearer ${token}`, // Include auth token
+                        },
+                        body: JSON.stringify(updatedVehiclePayload),
+                    });
+
 
                     if (!vehicleRes.ok) {
                         setStatus("error");
