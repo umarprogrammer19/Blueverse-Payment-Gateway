@@ -210,7 +210,8 @@ export default function PaymentSuccess() {
                     const vehicleData = await vehicleRes.json();
 
                     if (vehicleData.message == "License Plate already associated with another user" || vehicleData.errorMessage[0] == "License Plate already associated with another user") {
-                        var updatedVehiclePayload = {
+                        console.log("Vehicle Match");
+                        const updatedVehiclePayload = {
                             color: "",
                             customerId: String(customerId),
                             description: "",
@@ -223,30 +224,24 @@ export default function PaymentSuccess() {
                             vehicleModelId: "",
                             year: "",
                         };
-                        console.log("Vehicle Match");
-                    } else {
-                        setStatus("error");
-                        setMessage("Error creating vehicle for this license plate.");
-                        return
+
+                        vehicleRes = await fetch(`${base}/api/vehicle`, {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json",
+                                Authorization: `Bearer ${token}`, // Include auth token
+                            },
+                            body: JSON.stringify(updatedVehiclePayload),
+                        });
+
+                        if (!vehicleRes.ok) {
+                            setStatus("error");
+                            setMessage("Error creating vehicle for this license plate.");
+                            return;
+                        }
+
+                        vehicleId = vehicleData.data || vehicleData.vehicleId || null;
                     }
-
-                    vehicleRes = await fetch(`${base}/api/vehicle`, {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/json",
-                            Authorization: `Bearer ${token}`, // Include auth token
-                        },
-                        body: JSON.stringify(updatedVehiclePayload),
-                    });
-
-
-                    if (!vehicleRes.ok) {
-                        setStatus("error");
-                        setMessage("Error creating vehicle for this license plate.");
-                        return;
-                    }
-
-                    vehicleId = vehicleData.data || vehicleData.vehicleId || null;
 
                     // Create invoice in secondary system
                     const transactionId = params.get("transactionId"); // Already retrieved earlier in useEffect
