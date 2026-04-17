@@ -38,10 +38,10 @@ const getSpecialVehiclePrice = (slug) => {
     if (sedanMatch) {
         const price = sedanMatch[1] ? Number(sedanMatch[1]) : 103.95; // Default sedan price
         return {
-            membershipName: "Sedan",
-            membershipPrice: price,
+            washbookName: "Sedan",
+            washbookPrice: price,
             slug: "sedan",
-            membershipId: "sedan-special", // fake ID for localStorage
+            washbookId: "sedan-special", // fake ID for localStorage - treated as washbook (one-time)
         };
     }
 
@@ -50,10 +50,10 @@ const getSpecialVehiclePrice = (slug) => {
     if (suvMatch) {
         const price = suvMatch[1] ? Number(suvMatch[1]) : 150.0; // default SUV price
         return {
-            membershipName: "SUV",
-            membershipPrice: price,
+            washbookName: "SUV",
+            washbookPrice: price,
             slug: "suv",
-            membershipId: "suv-special", // fake ID for localStorage
+            washbookId: "suv-special", // fake ID for localStorage - treated as washbook (one-time)
         };
     }
 
@@ -157,6 +157,8 @@ export default function Membership({ onEnsureCustomer, isProcessing = false }) {
     const selectedItem = useMemo(() => {
         // First check for special vehicle pricing (sedan/suv with optional price)
         const specialVehicle = getSpecialVehiclePrice(slugFromHash);
+        console.log(specialVehicle);
+        
         if (specialVehicle) {
             return specialVehicle;
         }
