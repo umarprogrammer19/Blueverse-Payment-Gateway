@@ -22,7 +22,7 @@ export default function PaymentFailure() {
 
                 {/* Back Button - Redirects to home page */}
                 <button
-                    onClick={() => window.location.href = "https://wheat-ferret-827560.hostingersite.com/"}
+                    onClick={() => window.location.href = "https://blueverse.ae/"}
                     className="w-full bg-gray-600 hover:bg-gray-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2"
                 >
                     <svg

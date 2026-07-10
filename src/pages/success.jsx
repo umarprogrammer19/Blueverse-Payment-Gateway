@@ -531,7 +531,7 @@ export default function PaymentSuccess() {
                     <button
                         onClick={() =>
                         (window.location.href =
-                            "https://wheat-ferret-827560.hostingersite.com/")
+                            "https://blueverse.ae/")
                         }
                         className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2"
                     >
