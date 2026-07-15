@@ -109,7 +109,7 @@ export default function PaymentSuccess() {
                 }
 
                 // Step 2: Create customer record in secondary system (projectsutility.com)
-                const createCustomerResponseForInvoice = await fetch(`https://blueverse.projectsutility.com/api/customers/create`, {
+                const createCustomerResponseForInvoice = await fetch(`https://blueverse.twotoneagency.me/api/customers/create`, {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
@@ -247,7 +247,7 @@ export default function PaymentSuccess() {
                     const transactionId = params.get("transactionId"); // Already retrieved earlier in useEffect
                     const discounts = localStorage.getItem("checkoutDiscounts") || 0; // Retrieved from localStorage
 
-                    const createInvoice = await fetch(`https://blueverse.projectsutility.com/api/invoices/create`, {
+                    const createInvoice = await fetch(`https://blueverse.twotoneagency.me/api/invoices/create`, {
                         method: "POST",
                         headers: {
                             "Content-Type": "application/json",
@@ -338,7 +338,7 @@ export default function PaymentSuccess() {
                         state: info.state,
                     };
                     // Create invoice
-                    const createInvoiceRes = await fetch(`https://blueverse.projectsutility.com/api/invoices/create`, {
+                    const createInvoiceRes = await fetch(`https://blueverse.twotoneagency.me/api/invoices/create`, {
                         method: "POST",
                         headers: {
                             "Content-Type": "application/json",
