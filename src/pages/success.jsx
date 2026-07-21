@@ -13,7 +13,6 @@ export default function PaymentSuccess() {
     const [invoiceLoading, setInvoiceLoading] = useState(false);
     const params = new URLSearchParams(window.location.search);
 
-    // Always attempt to send confirmation email
     const sendEmail = async (transactionId) => {
         try {
             const info = JSON.parse(localStorage.getItem("checkoutCustomerInfo") || "{}");
@@ -69,7 +68,6 @@ export default function PaymentSuccess() {
         setStatus("done");
         setMessage(`Payment Verified. Transaction ID: ${transactionId}`);
 
-        // ALWAYS send email first thing on successful payment
         sendEmail(transactionId);
     }, []);
 
@@ -113,13 +111,9 @@ export default function PaymentSuccess() {
 
                 const licencePlateNumber = localStorage.getItem("licensePlate") || "";
 
-                // Step 1: Create customer
                 const createCustomerRes = await fetch(`${base}/api/customer`, {
                     method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        Authorization: `Bearer ${token}`,
-                    },
+                    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
                     body: JSON.stringify({
                         key, siteId: siteId || "",
                         firstName: info.firstName, lastName: info.lastName,
@@ -146,7 +140,6 @@ export default function PaymentSuccess() {
                     return;
                 }
 
-                // Step 2: Create secondary customer
                 let newCustomerId = null;
                 try {
                     const secRes = await fetch(`https://blueverse.twotoneagency.me/api/customers/create`, {
@@ -163,7 +156,6 @@ export default function PaymentSuccess() {
                     if (secRes.ok) newCustomerId = secData.customer?._id;
                 } catch (e) { console.warn("[Finalize] Secondary customer error:", e); }
 
-                // Step 3: Vehicle
                 let vehicleId = null;
                 const licensePlate = String(info.licensePlate || licencePlateNumber || "").trim();
 
@@ -214,7 +206,6 @@ export default function PaymentSuccess() {
                     } catch (e) { console.warn("[Finalize] Vehicle error:", e); }
                 }
 
-                // Step 4: Invoice
                 if (newCustomerId) {
                     try {
                         const createInvoice = await fetch(`https://blueverse.twotoneagency.me/api/invoices/create`, {
@@ -235,7 +226,6 @@ export default function PaymentSuccess() {
                     } catch (e) { console.warn("[Finalize] Invoice error:", e); }
                 }
 
-                // Step 5: Membership assignment
                 if (pkg.type === "membership" && vehicleId) {
                     try {
                         const assignRes = await fetch(`${base}/api/vehicle/assignfreemembership`, {
