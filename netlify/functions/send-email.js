@@ -134,8 +134,16 @@ export const handler = async (event) => {
                               <td style="padding:4px 0;color:#1a1a1a;font-size:14px;font-weight:600;">${isMembership ? "Membership" : "Washbook / One-time"}</td>
                             </tr>
                             <tr>
-                              <td style="padding:4px 0;color:#555;font-size:14px;">Amount Paid</td>
-                              <td style="padding:4px 0;color:#1a1a1a;font-size:14px;font-weight:700;">AED ${Number(amount || 0).toFixed(2)}</td>
+                              <td style="padding:4px 0;color:#555;font-size:14px;">Subtotal</td>
+                              <td style="padding:4px 0;color:#1a1a1a;font-size:14px;">AED ${Number(amount || 0).toFixed(2)}</td>
+                            </tr>
+                            <tr>
+                              <td style="padding:4px 0;color:#555;font-size:14px;">VAT (5%)</td>
+                              <td style="padding:4px 0;color:#1a1a1a;font-size:14px;">AED ${(Number(amount || 0) * 0.05).toFixed(2)}</td>
+                            </tr>
+                            <tr>
+                              <td style="padding:6px 0;color:#1a1a1a;font-size:15px;font-weight:700;">Total Paid</td>
+                              <td style="padding:6px 0;color:#2162af;font-size:15px;font-weight:700;">AED ${(Number(amount || 0) * 1.05).toFixed(2)}</td>
                             </tr>
                             <tr>
                               <td style="padding:4px 0;color:#555;font-size:14px;">Transaction ID</td>
