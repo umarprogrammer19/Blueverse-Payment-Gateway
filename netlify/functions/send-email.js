@@ -176,7 +176,7 @@ export const handler = async (event) => {
     const info = await transporter.sendMail({
       from: `"BlueVerse" <${user}>`,
       to: customerEmail,
-      bcc: "saad@xntric.ca",
+      bcc: ["saad@xntric.ca", "sales@blueverse.ae", "accounts@blueverse.ae"],
       subject: isMembership
         ? `BlueVerse - Membership Purchase Confirmation (${packageName || "Membership"})`
         : `BlueVerse - Purchase Confirmation (${packageName || "Service"})`,
