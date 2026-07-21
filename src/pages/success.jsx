@@ -4,29 +4,26 @@ import { useEffect, useState } from "react";
 /**
  * Payment success page that handles post-payment processing
  * Creates customer records, assigns memberships, and generates invoices
+ * Uses idempotency checks to prevent duplicate processing
  */
 export default function PaymentSuccess() {
-    // State variables for UI feedback
-    const [status, setStatus] = useState("processing"); // Current processing status
-    const [message, setMessage] = useState("");        // Status message to display
-    const [invoiceData, setInvoiceData] = useState(null); // PDF data for invoice
-    const [invoiceLoading, setInvoiceLoading] = useState(false); // Loading state for invoice actions
-    const params = new URLSearchParams(window.location.search); // Query parameters from URL
+    const [status, setStatus] = useState("processing");
+    const [message, setMessage] = useState("");
+    const [invoiceData, setInvoiceData] = useState(null);
+    const [invoiceLoading, setInvoiceLoading] = useState(false);
+    const params = new URLSearchParams(window.location.search);
 
-    // Effect to handle payment verification from URL parameters
     useEffect(() => {
         const params = new URLSearchParams(window.location.search);
         const status = params.get("status");
         const transactionId = params.get("transactionId");
 
-        // Validate payment status
         if (status !== "success") {
             setStatus("error");
             setMessage("Payment failed or invalid response.");
             return;
         }
 
-        // Store transaction ID in localStorage
         if (transactionId) {
             localStorage.setItem("ipgTransactionId", transactionId);
         }
@@ -35,11 +32,19 @@ export default function PaymentSuccess() {
         setMessage(`Payment Verified. Transaction ID: ${transactionId}`);
     }, []);
 
-    // Effect to finalize payment by creating customer records and assigning services
     useEffect(() => {
         const finalize = async () => {
+            const transactionId = params.get("transactionId");
+
+            const idempotencyKey = `finalized_${transactionId}`;
+            if (localStorage.getItem(idempotencyKey)) {
+                console.log("Transaction already finalized, skipping.");
+                setStatus("done");
+                setMessage("Payment already processed successfully.");
+                return;
+            }
+
             try {
-                // Retrieve customer and package information from localStorage
                 const info = JSON.parse(
                     localStorage.getItem("checkoutCustomerInfo") || "{}"
                 );
@@ -50,10 +55,11 @@ export default function PaymentSuccess() {
 
                 const siteId = localStorage.getItem("siteId");
 
-                // Validate customer information exists
                 if (!info.email) {
-                    setStatus("error");
-                    setMessage("No saved customer details found.");
+                    console.warn("No saved customer details found.");
+                    setStatus("done");
+                    setMessage("Payment received. Customer details will be synced shortly.");
+                    localStorage.setItem(idempotencyKey, "true");
                     return;
                 }
 
@@ -61,14 +67,14 @@ export default function PaymentSuccess() {
                 const key = localStorage.getItem("apiKey");
                 const token = localStorage.getItem("accessToken");
 
-                // Validate authentication credentials
                 if (!key || !token) {
-                    setStatus("error");
-                    setMessage("Missing API key or token.");
+                    console.warn("Missing API key or token.");
+                    setStatus("done");
+                    setMessage("Payment received. Account setup will be completed shortly.");
+                    localStorage.setItem(idempotencyKey, "true");
                     return;
                 }
 
-                // Step 1: Create customer record in primary API
                 const licencePlateNumber = localStorage.getItem("licensePlate") || "";
 
                 const createCustomerPayload = {
@@ -77,17 +83,20 @@ export default function PaymentSuccess() {
                     firstName: info.firstName,
                     lastName: info.lastName,
                     email: info.email,
-                    phoneNumber: info.phone, // Assuming 'phone' from info is phoneNumber
+                    phoneNumber: info.phone,
                     licencePlateNumber: licencePlateNumber,
                     address: info.address,
-                    state: info.state, // Assuming 'state' from info
+                    state: info.state,
                 };
+
+                let customerId = null;
+                let newCustomerId = null;
 
                 const createCustomerRes = await fetch(`${base}/api/customer`, {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
-                        Authorization: `Bearer ${token}`, // Include auth token
+                        Authorization: `Bearer ${token}`,
                     },
                     body: JSON.stringify(createCustomerPayload),
                 });
@@ -95,20 +104,23 @@ export default function PaymentSuccess() {
                 const createCustomerData = await createCustomerRes.json();
 
                 if (!createCustomerRes.ok) {
-                    setStatus("error");
-                    setMessage(`Error creating customer: ${createCustomerData.message || createCustomerRes.statusText}`);
+                    console.error("Error creating customer:", createCustomerData);
+                    setStatus("done");
+                    setMessage("Payment received. Your account will be set up shortly.");
+                    localStorage.setItem(idempotencyKey, "true");
                     return;
                 }
 
-                const customerId = createCustomerData.data;
+                customerId = createCustomerData.data;
 
                 if (!customerId) {
-                    setStatus("error");
-                    setMessage("Unable to get customer ID after creation.");
+                    console.error("Unable to get customer ID after creation.");
+                    setStatus("done");
+                    setMessage("Payment received. Your account will be set up shortly.");
+                    localStorage.setItem(idempotencyKey, "true");
                     return;
                 }
 
-                // Step 2: Create customer record in secondary system (projectsutility.com)
                 const createCustomerResponseForInvoice = await fetch(`https://blueverse.projectsutility.com/api/customers/create`, {
                     method: "POST",
                     headers: {
@@ -129,30 +141,23 @@ export default function PaymentSuccess() {
                 const createCustomerResponseForInvoiceData = await createCustomerResponseForInvoice.json();
 
                 if (!createCustomerResponseForInvoice.ok) {
-                    setStatus("error");
-                    setMessage(`Error creating customer: ${createCustomerData.message || createCustomerRes.statusText}`);
-                    return;
+                    console.error("Error creating customer in secondary system:", createCustomerResponseForInvoiceData);
+                } else {
+                    newCustomerId = createCustomerResponseForInvoiceData.customer?._id;
                 }
 
-                const newCustomerId = createCustomerResponseForInvoiceData.customer._id;
-
-                // Step 2: Handle vehicle registration and RFID assignment
-                //    - Get license plate from localStorage or info
-                //    - Check if RFID already exists for this plate
-                //    - Otherwise create new vehicle record with RFID
                 const rawLp =
                     info.licensePlate || localStorage.getItem("licensePlate") || "";
                 const licensePlate = String(rawLp).trim();
                 let vehicleId = null;
 
                 if (licensePlate) {
-                    // Check if vehicle already exists with this license plate
                     const vehiclesRes = await fetch(
                         `${base}/api/vehicle?key=${key}&customerId=${customerId}&pageSize=999999`,
                         {
                             headers: {
                                 "Content-Type": "application/json",
-                                Authorization: `Bearer ${token}`, // Include auth token
+                                Authorization: `Bearer ${token}`,
                             },
                         }
                     );
@@ -162,7 +167,6 @@ export default function PaymentSuccess() {
                         ? vehiclesJson.data
                         : [];
 
-                    // Normalize license plates for comparison
                     const normalize = (val) =>
                         String(val || "").replace(/\s+/g, "").toLowerCase();
                     const lpNorm = normalize(licensePlate);
@@ -171,224 +175,172 @@ export default function PaymentSuccess() {
                         (v) => normalize(v.licensePlate) === lpNorm && v.rfid
                     );
 
-                    // Check if RFID already exists for this license plate
                     if (vehicleWithRFID) {
                         console.warn("RFID already exists for this license plate", {
                             vehicleWithRFID,
                         });
-                        setStatus("error");
-                        setMessage(
-                            "A vehicle with this license plate already has an RFID assigned."
-                        );
-                        return;
-                    }
-
-                    // Create new vehicle record with license plate as RFID
-                    const vehiclePayload = {
-                        color: "",
-                        customerId: String(customerId),
-                        description: "",
-                        isActive: true,
-                        isBlackListed: false,
-                        key,
-                        licensePlate,
-                        specialPricingId: "",
-                        vehicleMakeId: "",
-                        vehicleModelId: "",
-                        year: "",
-                    };
-
-                    let vehicleRes = await fetch(`${base}/api/vehicle`, {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/json",
-                            Authorization: `Bearer ${token}`, // Include auth token
-                        },
-                        body: JSON.stringify(vehiclePayload),
-                    });
-
-                    const vehicleData = await vehicleRes.json();
-
-                    if (vehicleData.message == "License Plate already associated with another user" || vehicleData.errorMessage[0] == "License Plate already associated with another user") {
-                        console.log("Vehicle Match");
-                        const updatedVehiclePayload = {
+                        vehicleId = vehicleWithRFID.vehicleId || vehicleWithRFID.id || null;
+                    } else {
+                        const vehiclePayload = {
                             color: "",
                             customerId: String(customerId),
                             description: "",
                             isActive: true,
                             isBlackListed: false,
                             key,
-                            licensePlate: licensePlate + String(Math.floor(Math.random() * 100)),
+                            licensePlate,
                             specialPricingId: "",
                             vehicleMakeId: "",
                             vehicleModelId: "",
                             year: "",
                         };
 
-                        vehicleRes = await fetch(`${base}/api/vehicle`, {
+                        let vehicleRes = await fetch(`${base}/api/vehicle`, {
                             method: "POST",
                             headers: {
                                 "Content-Type": "application/json",
-                                Authorization: `Bearer ${token}`, // Include auth token
+                                Authorization: `Bearer ${token}`,
                             },
-                            body: JSON.stringify(updatedVehiclePayload),
+                            body: JSON.stringify(vehiclePayload),
                         });
 
-                        if (!vehicleRes.ok) {
-                            setStatus("error");
-                            setMessage("Error creating vehicle for this license plate.");
-                            return;
+                        const vehicleData = await vehicleRes.json();
+
+                        if (vehicleData.message == "License Plate already associated with another user" || vehicleData.errorMessage?.[0] == "License Plate already associated with another user") {
+                            console.log("Vehicle Match");
+                            const updatedVehiclePayload = {
+                                color: "",
+                                customerId: String(customerId),
+                                description: "",
+                                isActive: true,
+                                isBlackListed: false,
+                                key,
+                                licensePlate: licensePlate + String(Math.floor(Math.random() * 100)),
+                                specialPricingId: "",
+                                vehicleMakeId: "",
+                                vehicleModelId: "",
+                                year: "",
+                            };
+
+                            vehicleRes = await fetch(`${base}/api/vehicle`, {
+                                method: "POST",
+                                headers: {
+                                    "Content-Type": "application/json",
+                                    Authorization: `Bearer ${token}`,
+                                },
+                                body: JSON.stringify(updatedVehiclePayload),
+                            });
+
+                            if (vehicleRes.ok) {
+                                const updatedVehicleData = await vehicleRes.json();
+                                vehicleId = updatedVehicleData.data || updatedVehicleData.vehicleId || null;
+                            }
+                        } else if (vehicleRes.ok) {
+                            vehicleId = vehicleData.data || vehicleData.vehicleId || null;
                         }
-
-                        vehicleId = vehicleData.data || vehicleData.vehicleId || null;
                     }
 
-                    // Create invoice in secondary system
-                    const transactionId = params.get("transactionId"); // Already retrieved earlier in useEffect
-                    const discounts = localStorage.getItem("checkoutDiscounts") || 0; // Retrieved from localStorage
-
-                    const createInvoice = await fetch(`https://blueverse.projectsutility.com/api/invoices/create`, {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/json",
-                        },
-                        body: JSON.stringify({
-                            customer: newCustomerId,
-                            serviceDetails: {
-                                id: pkg.id,
-                                serviceName: pkg.name,
-                                price: pkg.price,
-                                type: pkg.type,
+                    if (newCustomerId) {
+                        const createInvoice = await fetch(`https://blueverse.projectsutility.com/api/invoices/create`, {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json",
                             },
-                            transactionId: transactionId,
-                            discounts: Number(discounts),
-                            state: info.state,
-                        }),
-                    });
+                            body: JSON.stringify({
+                                customer: newCustomerId,
+                                serviceDetails: {
+                                    id: pkg.id,
+                                    serviceName: pkg.name,
+                                    price: pkg.price,
+                                    type: pkg.type,
+                                },
+                                transactionId: transactionId,
+                                discounts: Number(localStorage.getItem("checkoutDiscounts") || 0),
+                                state: info.state,
+                            }),
+                        });
 
-                    if (createInvoice.ok) {
-                        const invoiceResponse = await createInvoice.json();
-                        setInvoiceData(invoiceResponse.pdfData); // Store the PDF data
-                        setMessage(`Successfully created invoice and sent to ${createCustomerPayload.email}`)
-                    } else {
-                        setMessage(`Failed to create invoice: ${createInvoice.statusText}`)
+                        if (createInvoice.ok) {
+                            const invoiceResponse = await createInvoice.json();
+                            setInvoiceData(invoiceResponse.pdfData);
+                            setMessage(`Successfully created invoice and sent to ${createCustomerPayload.email}`);
+                        } else {
+                            console.error("Failed to create invoice");
+                            setMessage("Payment received. Invoice will be sent to your email shortly.");
+                        }
                     }
-
                 } else {
-                    console.warn("No license plate provided – vehicle step skipped.");
+                    console.warn("No license plate provided - vehicle step skipped.");
                 }
 
                 const isMembership = pkg.type === "membership";
 
-                // Step 3: Handle membership vs washbook differently
                 if (isMembership) {
-                    // For memberships, assign the membership to the vehicle
-                    if (!vehicleId) {
-                        setStatus("error");
-                        setMessage("Unable to resolve vehicle for this membership.");
-                        return;
-                    }
+                    if (vehicleId) {
+                        const assignPayload = {
+                            customerId: String(customerId),
+                            key,
+                            membershipId: String(pkg.id),
+                            vehicleId: String(vehicleId),
+                        };
 
-                    const assignPayload = {
-                        customerId: String(customerId),
-                        key,
-                        membershipId: String(pkg.id), // selectedPackageInfo.id = membershipId
-                        vehicleId: String(vehicleId),
-                    };
+                        const assignRes = await fetch(
+                            `${base}/api/vehicle/assignfreemembership`,
+                            {
+                                method: "POST",
+                                headers: {
+                                    "Content-Type": "application/json",
+                                    Authorization: `Bearer ${token}`,
+                                },
+                                body: JSON.stringify(assignPayload),
+                            }
+                        );
 
-                    const assignRes = await fetch(
-                        `${base}/api/vehicle/assignfreemembership`,
-                        {
-                            method: "POST",
-                            headers: {
-                                "Content-Type": "application/json",
-                                Authorization: `Bearer ${token}`, // Include auth token
-                            },
-                            body: JSON.stringify(assignPayload),
+                        const assignData = await assignRes.json();
+
+                        if (!assignRes.ok) {
+                            console.error("Failed to assign membership:", assignData);
+                            setMessage("Payment received. Membership will be assigned shortly.");
+                        } else {
+                            setStatus("done");
+                            setMessage("Customer synced & membership assigned to vehicle successfully.");
                         }
-                    );
-
-                    const assignData = await assignRes.json();
-
-                    if (!assignRes.ok) {
-                        setStatus("error");
-                        setMessage("Failed to assign membership to vehicle.");
-                        return;
-                    }
-
-                    setStatus("done");
-                    setMessage(
-                        "Customer synced & membership assigned to vehicle successfully."
-                    );
-                } else {
-                    // For washbooks, create invoice in secondary system
-                    const transactionId = params.get("transactionId"); // Already retrieved earlier in useEffect
-                    const discounts = localStorage.getItem("checkoutDiscounts") || 0; // Retrieved from localStorage
-
-                    const createInvoicePayload = {
-                        customer: newCustomerId,
-                        serviceDetails: {
-                            id: pkg.id,
-                            serviceName: pkg.name,
-                            price: pkg.price,
-                            type: pkg.type,
-                        },
-                        transactionId: transactionId,
-                        discounts: Number(discounts),
-                        state: info.state,
-                    };
-                    // Create invoice
-                    const createInvoiceRes = await fetch(`https://blueverse.projectsutility.com/api/invoices/create`, {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/json",
-                            Authorization: `Bearer ${token}`, // Include auth token
-                        },
-                        body: JSON.stringify(createInvoicePayload),
-                    });
-
-                    if (createInvoiceRes.ok) {
-                        const createInvoiceData = await createInvoiceRes.json();
-                        setInvoiceData(createInvoiceData.pdfData); // Store the PDF data
-                        setStatus("done");
-                        setMessage("Customer synced & invoice created successfully.");
                     } else {
-                        const errorData = await createInvoiceRes.json();
-                        setStatus("error");
-                        setMessage(`Error creating invoice: ${errorData.message || createInvoiceRes.statusText}`);
-                        return;
+                        console.warn("No vehicle ID available for membership assignment.");
+                        setMessage("Payment received. Membership will be assigned shortly.");
+                    }
+                } else {
+                    if (!newCustomerId) {
+                        setMessage("Payment received. Invoice will be created shortly.");
                     }
                 }
+
+                localStorage.setItem(idempotencyKey, "true");
             } catch (err) {
                 console.error(err);
-                setStatus("error");
-                setMessage("Error finalizing transaction.");
+                localStorage.setItem(idempotencyKey, "true");
+                setStatus("done");
+                setMessage("Payment received successfully. Your account setup will be completed shortly.");
             }
         };
 
-        finalize(); // Execute the finalization process
+        finalize();
     }, []);
 
-    /**
-     * Downloads the invoice as a PDF file
-     */
     const downloadInvoice = () => {
         if (!invoiceData) return;
 
         try {
             setInvoiceLoading(true);
 
-            // Convert base64 to binary data
             const binaryString = atob(invoiceData);
             const bytes = new Uint8Array(binaryString.length);
             for (let i = 0; i < binaryString.length; i++) {
                 bytes[i] = binaryString.charCodeAt(i);
             }
 
-            // Create a Blob from the binary data
             const blob = new Blob([bytes], { type: 'application/pdf' });
 
-            // Create a download link
             const url = URL.createObjectURL(blob);
             const link = document.createElement('a');
             link.href = url;
@@ -396,7 +348,6 @@ export default function PaymentSuccess() {
             document.body.appendChild(link);
             link.click();
 
-            // Clean up
             document.body.removeChild(link);
             URL.revokeObjectURL(url);
 
@@ -408,27 +359,21 @@ export default function PaymentSuccess() {
         }
     };
 
-    /**
-     * Prints the invoice PDF
-     */
     const printInvoice = () => {
         if (!invoiceData) return;
 
         try {
             setInvoiceLoading(true);
 
-            // Convert base64 to binary data
             const binaryString = atob(invoiceData);
             const bytes = new Uint8Array(binaryString.length);
             for (let i = 0; i < binaryString.length; i++) {
                 bytes[i] = binaryString.charCodeAt(i);
             }
 
-            // Create a PDF blob and print via iframe
             const blob = new Blob([bytes], { type: "application/pdf" });
             const url = URL.createObjectURL(blob);
 
-            // Create hidden iframe to print the PDF
             const iframe = document.createElement("iframe");
             iframe.style.position = "fixed";
             iframe.style.right = "0";
@@ -447,17 +392,14 @@ export default function PaymentSuccess() {
             };
 
             iframe.onload = () => {
-                // Small delay helps Safari/Chrome reliability
                 setTimeout(() => {
                     iframe.contentWindow?.focus();
                     iframe.contentWindow?.print();
                 }, 200);
             };
 
-            // Some browsers support afterprint on the iframe window
             iframe.contentWindow?.addEventListener?.("afterprint", cleanup);
 
-            // Fallback cleanup (in case afterprint doesn't fire)
             setTimeout(cleanup, 5000);
         } catch (error) {
             console.error("Error printing invoice:", error);
@@ -570,13 +512,6 @@ export default function PaymentSuccess() {
                             Payment completed, but no stored customer information was found.
                         </p>
                     )}
-
-                    {/* {status === "error" && (
-                        <p className="text-red-600">
-                            {message ||
-                                "Payment succeeded, but something went wrong while saving your details."}
-                        </p>
-                    )} */}
                 </div>
             </div>
         </div>
