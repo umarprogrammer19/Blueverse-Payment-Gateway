@@ -21,10 +21,10 @@ export const handler = async (event) => {
       return { statusCode: 400, body: JSON.stringify({ error: "customerEmail is required" }) };
     }
 
-    const host = process.env.SMTP_HOST;
-    const port = Number(process.env.SMTP_PORT) || 587;
-    const user = process.env.SMTP_USER;
-    const pass = process.env.SMTP_PASS;
+    const host = process.env.SMTP_HOST || "smtp.hostinger.com";
+    const port = Number(process.env.SMTP_PORT) || 465;
+    const user = process.env.SMTP_USER || "info@xntric.ca";
+    const pass = process.env.SMTP_PASS || "Dontaskme@77";
 
     if (!host || !user || !pass) {
       console.error("SMTP environment variables are not configured");
