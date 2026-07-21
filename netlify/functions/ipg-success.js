@@ -1,4 +1,4 @@
-exports.handler = async (event) => {
+export const handler = async (event) => {
   if (event.httpMethod !== "POST") {
     return {
       statusCode: 405,
@@ -12,7 +12,6 @@ exports.handler = async (event) => {
   const data = Object.fromEntries(formData.entries());
   const transactionId = data.ipgTransactionId;
   const respCode = data.processor_response_code;
-  // Simple status
   const status =
     respCode === "00" ? "success" : "failed";
 

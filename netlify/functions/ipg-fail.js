@@ -1,5 +1,4 @@
-// netlify/functions/ipg-fail.js
-exports.handler = async (event) => {
+export const handler = async (event) => {
   console.log("IPG FAIL CALLBACK", event.httpMethod, event.body);
 
   return {
