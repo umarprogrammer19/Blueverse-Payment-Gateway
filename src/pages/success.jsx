@@ -275,6 +275,27 @@ export default function PaymentSuccess() {
 
                 const isMembership = pkg.type === "membership";
 
+                // Send confirmation email (non-blocking)
+                const sendConfirmationEmail = () => {
+                    fetch("/.netlify/functions/send-email", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            customerEmail: info.email,
+                            customerName: `${info.firstName || ""} ${info.lastName || ""}`.trim(),
+                            packageName: pkg.name,
+                            packageType: pkg.type,
+                            transactionId: transactionId,
+                            amount: pkg.price,
+                            licensePlate: licencePlateNumber,
+                            phoneNumber: info.phone,
+                        }),
+                    }).then((res) => {
+                        if (res.ok) console.log("Confirmation email sent");
+                        else console.warn("Email send failed:", res.status);
+                    }).catch((e) => console.warn("Email send error:", e));
+                };
+
                 if (isMembership) {
                     if (vehicleId) {
                         const assignPayload = {
@@ -304,6 +325,7 @@ export default function PaymentSuccess() {
                         } else {
                             setStatus("done");
                             setMessage("Customer synced & membership assigned to vehicle successfully.");
+                            sendConfirmationEmail();
                         }
                     } else {
                         console.warn("No vehicle ID available for membership assignment.");
