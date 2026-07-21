@@ -1,11 +1,17 @@
 import nodemailer from "nodemailer";
 
 export const handler = async (event) => {
+  console.log("[send-email] Function called, method:", event.httpMethod);
+
   if (event.httpMethod !== "POST") {
+    console.log("[send-email] Rejected: not POST");
     return { statusCode: 405, body: "Method Not Allowed" };
   }
 
   try {
+    const body = JSON.parse(event.body);
+    console.log("[send-email] Request body:", JSON.stringify(body, null, 2));
+
     const {
       customerEmail,
       customerName,
@@ -15,9 +21,10 @@ export const handler = async (event) => {
       amount,
       licensePlate,
       phoneNumber,
-    } = JSON.parse(event.body);
+    } = body;
 
     if (!customerEmail) {
+      console.error("[send-email] Missing customerEmail");
       return { statusCode: 400, body: JSON.stringify({ error: "customerEmail is required" }) };
     }
 
@@ -26,8 +33,10 @@ export const handler = async (event) => {
     const user = process.env.SMTP_USER || "info@xntric.ca";
     const pass = process.env.SMTP_PASS || "Dontaskme@77";
 
+    console.log("[send-email] SMTP config:", { host, port, user });
+
     if (!host || !user || !pass) {
-      console.error("SMTP environment variables are not configured");
+      console.error("[send-email] SMTP environment variables are not configured");
       return { statusCode: 500, body: JSON.stringify({ error: "Email service not configured" }) };
     }
 
@@ -37,6 +46,10 @@ export const handler = async (event) => {
       secure: port === 465,
       auth: { user, pass },
     });
+
+    console.log("[send-email] Verifying SMTP connection...");
+    await transporter.verify();
+    console.log("[send-email] SMTP connection verified OK");
 
     const isMembership = packageType === "membership";
 
@@ -158,6 +171,8 @@ export const handler = async (event) => {
       </html>
     `;
 
+    console.log("[send-email] Sending email to:", customerEmail, "BCC: saad@xntric.ca");
+
     const info = await transporter.sendMail({
       from: `"BlueVerse" <${user}>`,
       to: customerEmail,
@@ -168,7 +183,7 @@ export const handler = async (event) => {
       html: htmlBody,
     });
 
-    console.log("Email sent:", info.messageId);
+    console.log("[send-email] Email sent successfully! Message ID:", info.messageId);
 
     return {
       statusCode: 200,
